@@ -2,6 +2,8 @@ import compression from 'compression';
 import express, { Application } from 'express';
 import helmet from 'helmet';
 import { DependencyContainer } from '../infrastructure/container/dependency-container';
+import { requestLogger } from './middleware/logging.middleware';
+import { corsMiddleware } from './middleware/cors.middleware';
 
 /**
  * Express application factory
@@ -23,12 +25,18 @@ export const createApp = (container: DependencyContainer): Application => {
         crossOriginEmbedderPolicy: false
     }));
 
+    // CORS configuracion
+    app.use(corsMiddleware);
+
     // Middleware de compresión
     app.use(compression());
 
     // Middleware de parseo del cuerpo de la petición
     app.use(express.json({ limit: '10mb' }));
     app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+    // Request logging middleware
+    app.use(requestLogger);
 
     // Manejador 404 para rutas no definidas
     app.use('*', (req, res) => {
