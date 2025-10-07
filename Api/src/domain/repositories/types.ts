@@ -41,3 +41,21 @@ export interface TaskFilters {
   limit?: number;
   offset?: number;
 }
+
+// Category DTOs
+export interface CreateCategoryDto {
+  nombre: string;
+  color?: string | null;
+  usuarioId: string;
+}
+
+export interface UpdateCategoryDto {
+  nombre?: string;
+  color?: string | null;
+}
+
+// Tag DTOs
+export interface CreateTagDto {
+  nombre: string;
+  usuarioId: string;
+}
