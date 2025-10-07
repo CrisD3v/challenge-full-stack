@@ -4,6 +4,8 @@ import helmet from 'helmet';
 import { DependencyContainer } from '../infrastructure/container/dependency-container';
 import { requestLogger } from './middleware/logging.middleware';
 import { corsMiddleware } from './middleware/cors.middleware';
+import { errorHandler } from './middleware/error-handler.middleware';
+import { createApiRoutes, createHealthRoutes } from './routes';
 
 /**
  * Express application factory
@@ -38,6 +40,12 @@ export const createApp = (container: DependencyContainer): Application => {
     // Request logging middleware
     app.use(requestLogger);
 
+    // Health check routes (sin rate limiting)
+    app.use('/', createHealthRoutes());
+
+    // API routes con rate limiting
+    app.use('/api', createApiRoutes(container));
+
     // Manejador 404 para rutas no definidas
     app.use('*', (req, res) => {
         res.status(404).json({
@@ -46,6 +54,9 @@ export const createApp = (container: DependencyContainer): Application => {
             timestamp: new Date().toISOString()
         });
     });
+
+    // Middleware Manejo de errores globales
+    app.use(errorHandler);
 
     return app;
 };
