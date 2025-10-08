@@ -12,6 +12,43 @@ Este directorio contiene los controllers de la capa de presentación que manejan
   - `GET /api/auth/perfil` - Obtener perfil de usuario (protegido)
 - **Características**: Autenticación JWT, hashing de contraseñas, validación de input
 
+### TaskController
+- **Archivo**: `task.controller.ts`
+- **Endpoints**:
+  - `GET /api/tareas` - Obtener tareas con filtrado y ordenamiento
+  - `POST /api/tareas` - Crear nueva tarea
+  - `PUT /api/tareas/:id` - Actualizar tarea
+  - `DELETE /api/tareas/:id` - Eliminar tarea
+  - `PATCH /api/tareas/:id/completar` - Alternar completado de tarea
+- **Características**: Validación de propiedad, filtrado avanzado, paginación
+
+### CategoryController ✅ **NUEVO**
+- **Archivo**: `category.controller.ts`
+- **Endpoints**:
+  - `GET /api/categorias` - Obtener categorías del usuario
+  - `POST /api/categorias` - Crear nueva categoría
+  - `PUT /api/categorias/:id` - Actualizar categoría
+  - `DELETE /api/categorias/:id` - Eliminar categoría
+- **Características**:
+  - Operaciones CRUD completas
+  - Validación de propiedad (los usuarios solo pueden gestionar sus propias categorías)
+  - Manejo apropiado de errores con códigos de estado HTTP
+  - Validación de entrada para nombre y color de categoría
+  - Detección de conflictos para nombres de categoría duplicados por usuario
+
+### TagController ✅ **NUEVO**
+- **Archivo**: `tag.controller.ts`
+- **Endpoints**:
+  - `GET /api/etiquetas` - Obtener etiquetas del usuario
+  - `POST /api/etiquetas` - Crear nueva etiqueta
+- **Características**:
+  - Operaciones de creación y obtención
+  - Validación de propiedad (los usuarios solo pueden gestionar sus propias etiquetas)
+  - Manejo apropiado de errores con códigos de estado HTTP
+  - Validación de entrada para nombres de etiquetas
+  - Detección de conflictos para nombres de etiqueta duplicados por usuario
+
+
 ## Manejo de Errores
 
 Todos los controllers implementan manejo consistente de errores:
