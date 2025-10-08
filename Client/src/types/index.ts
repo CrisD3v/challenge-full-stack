@@ -84,12 +84,12 @@ export interface StatisticsTasks {
   total: number;
   completeds: number;
   pending : number;
-  porpriority: {
+  perPriority: {
     alta: number;
     media: number;
     baja: number;
   };
-  byCategory: Array<{
+  perCategory: Array<{
     category: string;
     total: number;
   }>;
