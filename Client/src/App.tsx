@@ -2,11 +2,28 @@ import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-d
 import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
-import './styles/globals.css'
 import { AuthPage } from './pages/AuthPage';
+import { ErrorBoundary } from './components/Commons/ErrorBoundary';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import './styles/globals.css'
 
 
 function AppRoutes() {
+
+  const { usuario, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        Cargando...
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -14,26 +31,28 @@ function AppRoutes() {
         path="/login"
         element={<AuthPage />}
       />
-       <Route
+      <Route
         path="/dashboard/*"
         element={<AuthPage />}
       />
-       <Route
+      <Route
         path="/"
         element={<AuthPage />}
       />
-      
+
     </Routes>
   );
 }
 
 function App() {
   return (
-    <>
-      <Router>
-        <AppRoutes />
-      </Router>
-    </>
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <AppRoutes />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 
