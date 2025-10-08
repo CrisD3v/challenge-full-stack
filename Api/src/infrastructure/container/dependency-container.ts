@@ -4,17 +4,25 @@ import {
     GetUserProfileUseCase,
     LoginUserUseCase,
     RegisterUserUseCase,
+    CreateTaskUseCase,
+    UpdateTaskUseCase,
+    GetTasksUseCase,
+    ToggleTaskCompleteUseCase,
+    DeleteTaskUseCase,
+
 } from '../../application/use-cases';
 import { CategoryRepository } from '../../domain/repositories/category.repository';
 import { TagRepository } from '../../domain/repositories/tag.repository';
 import { TaskRepository } from '../../domain/repositories/task.repository';
 import { UserRepository } from '../../domain/repositories/user.repository';
 import { AuthController } from '../../presentation/controllers/auth.controller';
+import { TaskController } from '../../presentation/controllers/task.controller';
 import { config } from '../config/app.config';
 import { createDatabasePool } from '../database/connection';
 import { IJWTService, JWTService } from '../security/jwt.service';
 import { IPasswordHasher, PasswordHasher } from '../security/password-hasher.service';
 import { PostgreSQLUserRepository } from '../repositories/postgresql-user.repository';
+import { PostgreSQLTaskRepository } from '../repositories/postgresql-task.repository';
 
 /**
  * Contenedor de inyección de dependencias para la aplicación
@@ -38,9 +46,15 @@ export class DependencyContainer {
     private _registerUserUseCase: RegisterUserUseCase | null = null;
     private _loginUserUseCase: LoginUserUseCase | null = null;
     private _getUserProfileUseCase: GetUserProfileUseCase | null = null;
+    private _createTaskUseCase: CreateTaskUseCase | null = null;
+    private _getTasksUseCase: GetTasksUseCase | null = null;
+    private _updateTaskUseCase: UpdateTaskUseCase | null = null;
+    private _deleteTaskUseCase: DeleteTaskUseCase | null = null;
+    private _toggleTaskCompleteUseCase: ToggleTaskCompleteUseCase | null = null;
 
     // Controllers
     private _authController: AuthController | null = null;
+    private _taskController: TaskController | null = null;
 
     private constructor() { }
 
@@ -85,6 +99,14 @@ export class DependencyContainer {
         return this._userRepository;
     }
 
+    public getTaskRepository(): TaskRepository {
+        if (!this._taskRepository) {
+            this._taskRepository = new PostgreSQLTaskRepository(this.getDatabasePool());
+        }
+        return this._taskRepository;
+    }
+
+
     // Use Cases
     public getRegisterUserUseCase(): RegisterUserUseCase {
         if (!this._registerUserUseCase) {
@@ -116,6 +138,52 @@ export class DependencyContainer {
         return this._getUserProfileUseCase;
     }
 
+    public getCreateTaskUseCase(): CreateTaskUseCase {
+        if (!this._createTaskUseCase) {
+            this._createTaskUseCase = new CreateTaskUseCase(
+                this.getTaskRepository()
+            );
+        }
+        return this._createTaskUseCase;
+    }
+
+    public getGetTasksUseCase(): GetTasksUseCase {
+        if (!this._getTasksUseCase) {
+            this._getTasksUseCase = new GetTasksUseCase(
+                this.getTaskRepository()
+            );
+        }
+        return this._getTasksUseCase;
+    }
+
+    public getUpdateTaskUseCase(): UpdateTaskUseCase {
+        if (!this._updateTaskUseCase) {
+            this._updateTaskUseCase = new UpdateTaskUseCase(
+                this.getTaskRepository()
+            );
+        }
+        return this._updateTaskUseCase;
+    }
+
+    public getDeleteTaskUseCase(): DeleteTaskUseCase {
+        if (!this._deleteTaskUseCase) {
+            this._deleteTaskUseCase = new DeleteTaskUseCase(
+                this.getTaskRepository()
+            );
+        }
+        return this._deleteTaskUseCase;
+    }
+
+    public getToggleTaskCompleteUseCase(): ToggleTaskCompleteUseCase {
+        if (!this._toggleTaskCompleteUseCase) {
+            this._toggleTaskCompleteUseCase = new ToggleTaskCompleteUseCase(
+                this.getTaskRepository()
+            );
+        }
+        return this._toggleTaskCompleteUseCase;
+    }
+
+
     // Controllers
     public getAuthController(): AuthController {
         if (!this._authController) {
@@ -126,6 +194,19 @@ export class DependencyContainer {
             );
         }
         return this._authController;
+    }
+
+    public getTaskController(): TaskController {
+        if (!this._taskController) {
+            this._taskController = new TaskController(
+                this.getCreateTaskUseCase(),
+                this.getGetTasksUseCase(),
+                this.getUpdateTaskUseCase(),
+                this.getDeleteTaskUseCase(),
+                this.getToggleTaskCompleteUseCase()
+            );
+        }
+        return this._taskController;
     }
 
 }

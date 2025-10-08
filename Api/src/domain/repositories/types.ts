@@ -10,52 +10,52 @@ export interface CreateUserDto {
 
 // Task DTOs
 export interface CreateTaskDto {
-  titulo: string;
-  descripcion?: string | null;
-  prioridad?: PriorityLevel;
-  fechaVencimiento?: Date | null;
-  usuarioId: string;
-  categoriaId?: string | null;
+  title: string;
+  description?: string | null;
+  priority?: PriorityLevel;
+  dueDate?: Date | null;
+  userId: string;
+  categoryId?: string | null;
 }
 
 export interface UpdateTaskDto {
-  titulo?: string;
-  descripcion?: string | null;
-  prioridad?: PriorityLevel;
-  fechaVencimiento?: Date | null;
-  categoriaId?: string | null;
+  title?: string;
+  description?: string | null;
+  priority?: PriorityLevel;
+  dueDate?: Date | null;
+  categoryId?: string | null;
 }
 
 export interface TaskFilters {
-  completada?: boolean;
-  categoria?: string;
-  prioridad?: PriorityLevel;
-  fechaVencimiento?: {
-    desde?: Date;
-    hasta?: Date;
+  completed?: boolean;
+  category?: string;
+  priority?: PriorityLevel;
+  dueDate?: {
+    since?: Date;
+    until?: Date;
   };
-  busqueda?: string;
-  etiquetas?: string[];
-  ordenar?: 'creado_en' | 'fecha_vencimiento' | 'prioridad' | 'titulo';
-  direccion?: 'asc' | 'desc';
+  search?: string;
+  tags?: string[];
+  order?: 'created_at' | 'due_date' | 'priority' | 'title';
+  direction?: 'asc' | 'desc';
   limit?: number;
   offset?: number;
 }
 
 // Category DTOs
 export interface CreateCategoryDto {
-  nombre: string;
+  name: string;
   color?: string | null;
-  usuarioId: string;
+  userId: string;
 }
 
 export interface UpdateCategoryDto {
-  nombre?: string;
+  name?: string;
   color?: string | null;
 }
 
 // Tag DTOs
 export interface CreateTagDto {
-  nombre: string;
-  usuarioId: string;
+  name: string;
+  userId: string;
 }
