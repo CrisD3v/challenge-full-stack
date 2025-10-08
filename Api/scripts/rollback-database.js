@@ -18,7 +18,9 @@ const readline = require('readline');
 require('dotenv').config();
 
 // Configuración de la base de datos
-const dbConfig = {
+const dbConfig = process.env.DB_URL ? {
+  connectionString: process.env.DB_URL
+} : {
   host: process.env.DB_HOST || 'localhost',
   port: parseInt(process.env.DB_PORT || '5432'),
   database: process.env.DB_NAME || 'taskdb',
@@ -84,7 +86,12 @@ async function main() {
   const skipConfirmation = process.argv.includes('--confirm');
 
   console.log('🔄 Script de Rollback de Base de Datos');
-  console.log(`📊 Base de Datos Objetivo: ${dbConfig.database} en ${dbConfig.host}:${dbConfig.port}`);
+
+  if (process.env.DB_URL) {
+    console.log(`📊 Base de Datos Objetivo: ${process.env.DB_URL}`);
+  } else {
+    console.log(`📊 Base de Datos Objetivo: ${dbConfig.database} en ${dbConfig.host}:${dbConfig.port}`);
+  }
 
   if (!skipConfirmation) {
     const confirmed = await confirmRollback();
