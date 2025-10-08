@@ -4,35 +4,54 @@ import { createAuthMiddleware } from '../../infrastructure/middleware/auth.middl
 import { checkReadiness, getDetailedHealthStatus, getHealthStatus } from '../../infrastructure/monitoring/health-service';
 import { authRateLimit, generalRateLimit } from '../middleware/rate-limit.middleware';
 import { createAuthRoutes } from './auth.routes';
+import { createCategoryRoutes } from './category.routes';
+import { createTagRoutes } from './tag.routes';
+import { createTaskRoutes } from './task.routes';
 
 /**
- * Main router configuration that sets up all API routes
- * Configures all endpoints with proper middleware and rate limiting
+ * Configuración principal del router que establece todas las rutas de la API
+ * Configura todos los endpoints con middleware apropiado y limitación de velocidad
  */
 export const createApiRoutes = (container: DependencyContainer): Router => {
     const router = Router();
 
-    // Get services from container
+    // Obtener servicios del contenedor
     const jwtService = container.getJWTService();
     const authController = container.getAuthController();
+    const taskController = container.getTaskController();
+    const categoryController = container.getCategoryController();
+    const tagController = container.getTagController();
+    const taskRepository = container.getTaskRepository();
 
-    // Create middleware instances
+    // Crear instancias de middleware
     const authMiddleware = createAuthMiddleware(jwtService);
 
-    // Authentication routes with stricter rate limiting
+    // Rutas de autenticación con limitación de velocidad más estricta
     // /api/auth/*
     router.use('/auth', authRateLimit, createAuthRoutes(authController, authMiddleware));
+
+    // Rutas de gestión de tareas con limitación de velocidad general
+    // /api/tareas/*
+    router.use('/tareas', generalRateLimit, createTaskRoutes(taskController, jwtService, taskRepository));
+
+    // Rutas de gestión de categorías con limitación de velocidad general
+    // /api/categorias/*
+    router.use('/categorias', generalRateLimit, createCategoryRoutes(categoryController, jwtService));
+
+    // Rutas de gestión de etiquetas con limitación de velocidad general
+    // /api/etiquetas/*
+    router.use('/etiquetas', generalRateLimit, createTagRoutes(tagController, jwtService));
 
     return router;
 };
 
 /**
- * Health check and monitoring endpoints
+ * Endpoints de verificación de salud y monitoreo
  */
 export const createHealthRoutes = (): Router => {
     const router = Router();
 
-    // Basic health check
+    // Verificación básica de salud
     router.get('/health', async (req, res) => {
         try {
             const healthStatus = await getHealthStatus();
@@ -50,7 +69,7 @@ export const createHealthRoutes = (): Router => {
         }
     });
 
-    // Detailed health check for monitoring systems
+    // Verificación detallada de salud para sistemas de monitoreo
     router.get('/health/detailed', async (req, res) => {
         try {
             const detailedHealth = await getDetailedHealthStatus();
@@ -67,7 +86,7 @@ export const createHealthRoutes = (): Router => {
         }
     });
 
-    // Readiness probe (for Kubernetes/container orchestration)
+    // Sonda de preparación (para Kubernetes/orquestación de contenedores)
     router.get('/ready', async (req, res) => {
         try {
             const isReady = await checkReadiness();
@@ -81,7 +100,7 @@ export const createHealthRoutes = (): Router => {
         }
     });
 
-    // Liveness probe (for Kubernetes/container orchestration)
+    // Sonda de vida (para Kubernetes/orquestación de contenedores)
     router.get('/live', (req, res) => {
         res.status(200).json({ status: 'alive' });
     });
