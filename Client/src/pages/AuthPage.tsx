@@ -24,7 +24,6 @@ export function AuthPage() {
     return (
         <AuthContainer>
             <AuthWrapper>
-                <p>Test Route</p>
                 {isLogin ? (
                     <FormLogin onSwitchToRegister={() => setIsLogin(false)} />
                 ) : (

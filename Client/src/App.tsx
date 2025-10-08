@@ -1,8 +1,6 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import { AuthPage } from './pages/AuthPage';
+import { Dashboard } from './pages/DashboardPage';
 import { ErrorBoundary } from './components/Commons/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
@@ -34,7 +32,7 @@ function AppRoutes() {
       />
       <Route
         path="/dashboard/*"
-        element={usuario ? <AuthPage /> : <Navigate to="/login" replace />}
+        element={usuario ? <Dashboard /> : <Navigate to="/login" replace />}
       />
       <Route
         path="/"
