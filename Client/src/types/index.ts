@@ -34,8 +34,8 @@ export interface Task {
   dueDate?: string;
   userId: string;
   categoryId?: string;
-  categoria?: Category;
-  etiquetas?: Tag[];
+  categories?: Category;
+  tags?: Tag[];
   createdAt: string;
   updatedAt: string;
 }
