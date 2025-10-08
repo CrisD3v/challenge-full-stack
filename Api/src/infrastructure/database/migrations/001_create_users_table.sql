@@ -22,8 +22,7 @@ CREATE INDEX idx_users_email ON users (email);
 CREATE INDEX idx_users_created_at ON users (created_at);
 
 -- Comentarios para la documentación.
-COMMENT ON
-TABLE users IS 'Almacena información de la cuenta de usuario';
+COMMENT ON TABLE users IS 'Almacena información de la cuenta de usuario';
 
 COMMENT ON COLUMN users.id IS 'Identificador único para el usuario';
 

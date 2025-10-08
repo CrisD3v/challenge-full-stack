@@ -17,7 +17,7 @@ CONSTRAINT fk_categories_user FOREIGN KEY (user_id) REFERENCES users (id) ON DEL
 CONSTRAINT categories_name_check CHECK (LENGTH(TRIM(name)) > 0),
 CONSTRAINT categories_color_check CHECK (
     color IS NULL
-    OR color ~ * '^#[0-9A-Fa-f]{6}$'
+    OR color ~ '^#[0-9A-Fa-f]{6}$'
 ),
 
 -- Restricción única: el usuario no puede tener nombres de categoría duplicados
@@ -45,8 +45,7 @@ CREATE TRIGGER trigger_categories_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Comentarios para documentación
-COMMENT ON
-TABLE categories IS 'Almacena categorías de tareas propiedad de los usuarios.';
+COMMENT ON TABLE categories IS 'Almacena categorías de tareas propiedad de los usuarios.';
 
 COMMENT ON COLUMN categories.id IS 'Identificador único para la categoría';
 

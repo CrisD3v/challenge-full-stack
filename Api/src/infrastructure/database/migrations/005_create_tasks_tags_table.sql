@@ -2,7 +2,7 @@
 -- Description: Crea la relación muchos-a-muchos entre tareas y etiquetas
 -- Requirements: (Asignación de etiquetas a tareas)
 
-CREATE TABLE tasks_tags (
+CREATE TABLE task_tags (
     task_id UUID NOT NULL,
     tag_id UUID NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
