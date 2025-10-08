@@ -47,7 +47,7 @@ export const createApp = (container: DependencyContainer): Application => {
     app.use('/api', createApiRoutes(container));
 
     // Manejador 404 para rutas no definidas
-    app.use('*', (req, res) => {
+    app.use((req, res) => {
         res.status(404).json({
             error: 'Not Found',
             message: `Route ${req.method} ${req.originalUrl} not found`,
@@ -79,12 +79,31 @@ export const startServer = (app: Application, config: AppConfig): Promise<void> 
                 console.log(`🚀 Task Management API started successfully`);
                 console.log(`📍 Server running on port ${config.port}`);
                 console.log(`🌍 Environment: ${config.nodeEnv}`);
+                console.log(`📊 Health check: http://localhost:${config.port}/health`);
+                console.log(`🔗 API base URL: http://localhost:${config.port}/api`);
                 resolve();
             });
 
             // Manejo de cierre elegante
             const gracefulShutdown = async (signal: string) => {
                 console.log(`\n🛑 Received ${signal}. Starting graceful shutdown...`);
+
+                server.close(async () => {
+                    console.log('📴 HTTP server closed');
+
+                    try {
+                        // Clean up database connections and other resources
+                        const container = DependencyContainer.getInstance();
+                        await container.cleanup();
+                        console.log('🧹 Resources cleaned up');
+
+                        console.log('✅ Graceful shutdown completed');
+                        process.exit(0);
+                    } catch (error) {
+                        console.error('❌ Error during cleanup:', error);
+                        process.exit(1);
+                    }
+                });
 
                 // Forzar cierre después de 10 segundos
                 setTimeout(() => {

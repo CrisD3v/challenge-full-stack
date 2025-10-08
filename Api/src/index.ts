@@ -1,12 +1,17 @@
 // Main application entry point
 import { config } from './infrastructure/config/app.config';
 import { DependencyContainer } from './infrastructure/container/dependency-container';
+import { DatabaseInitializer } from './infrastructure/database';
 import { logger } from './infrastructure/logging/logger';
 import { createApp, startServer } from './presentation/app';
 
 async function startApplication(): Promise<void> {
     try {
         logger.info('Starting Task Management API...');
+
+        // Initialize database connection
+        await DatabaseInitializer.initialize();
+        logger.info('Database connection established');
 
         // Inicializar contenedor de dependencias
         const container = DependencyContainer.getInstance();
