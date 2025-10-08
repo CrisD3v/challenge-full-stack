@@ -14,7 +14,7 @@ export class PostgreSQLUserRepository implements UserRepository {
         try {
             // Verificar si el email ya existe
             const existsResult = await client.query(
-                'SELECT id FROM usuarios WHERE email = $1',
+                'SELECT id FROM users WHERE email = $1',
                 [user.email]
             );
 
@@ -24,7 +24,7 @@ export class PostgreSQLUserRepository implements UserRepository {
 
             // Insertar nuevo usuario
             const insertQuery = `
-        INSERT INTO usuarios (email, name, password_hash)
+        INSERT INTO users (email, name, password_hash)
         VALUES ($1, $2, $3)
         RETURNING id, email, name, password_hash, created_at
       `;
@@ -63,7 +63,7 @@ export class PostgreSQLUserRepository implements UserRepository {
         try {
             const query = `
         SELECT id, email, name, password_hash, created_at
-        FROM usuarios
+        FROM users
         WHERE email = $1
       `;
 
@@ -95,7 +95,7 @@ export class PostgreSQLUserRepository implements UserRepository {
         try {
             const query = `
         SELECT id, email, name, password_hash, created_at
-        FROM usuarios
+        FROM users
         WHERE id = $1
       `;
 
@@ -125,7 +125,7 @@ export class PostgreSQLUserRepository implements UserRepository {
         const client = await this.db.connect();
 
         try {
-            const query = 'SELECT 1 FROM usuarios WHERE email = $1 LIMIT 1';
+            const query = 'SELECT 1 FROM users WHERE email = $1 LIMIT 1';
             const result = await client.query(query, [email]);
             return result.rows.length > 0;
         } catch (error) {

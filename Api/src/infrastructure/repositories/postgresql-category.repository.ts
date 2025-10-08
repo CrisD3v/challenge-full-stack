@@ -15,7 +15,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
     try {
       // Check if category name already exists for this user
       const existsResult = await client.query(
-        'SELECT id FROM categorias WHERE name = $1 AND usuario_id = $2',
+        'SELECT id FROM categories WHERE name = $1 AND usuario_id = $2',
         [category.name, category.userId]
       );
 
@@ -25,9 +25,9 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
       // Insert new category
       const insertQuery = `
-        INSERT INTO categorias (name, color, usuario_id)
+        INSERT INTO categorias (name, color, user_id)
         VALUES ($1, $2, $3)
-        RETURNING id, name, color, usuario_id
+        RETURNING id, name, color, user_id
       `;
 
       const result = await client.query(insertQuery, [
@@ -63,9 +63,9 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
     try {
       const query = `
-        SELECT id, name, color, usuario_id
-        FROM categorias
-        WHERE usuario_id = $1
+        SELECT id, name, color, user_id
+        FROM categories
+        WHERE user_id = $1
         ORDER BY name ASC
       `;
 
@@ -90,8 +90,8 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
     try {
       const query = `
-        SELECT id, name, color, usuario_id
-        FROM categorias
+        SELECT id, name, color, user_id
+        FROM categories
         WHERE id = $1
       `;
 
@@ -129,7 +129,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
       // Check for name conflicts if name is being updated
       if (updates.name && updates.name !== existingCategory.name) {
         const conflictResult = await client.query(
-          'SELECT id FROM categorias WHERE name = $1 AND usuario_id = $2 AND id != $3',
+          'SELECT id FROM categories WHERE name = $1 AND user_id = $2 AND id != $3',
           [updates.name, existingCategory.userId, id]
         );
 
@@ -161,10 +161,10 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
       params.push(id);
 
       const query = `
-        UPDATE categorias
+        UPDATE categories
         SET ${updateFields.join(', ')}
         WHERE id = $${paramIndex}
-        RETURNING id, name, color, usuario_id
+        RETURNING id, name, color, user_id
       `;
 
       const result = await client.query(query, params);
@@ -194,12 +194,12 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
       // First, set categoria_id to NULL for all tasks that reference this category
       await client.query(
-        'UPDATE tareas SET categoria_id = NULL WHERE categoria_id = $1',
+        'UPDATE tasks SET category_id = NULL WHERE category_id = $1',
         [id]
       );
 
       // Then delete the category
-      const result = await client.query('DELETE FROM categorias WHERE id = $1', [id]);
+      const result = await client.query('DELETE FROM categories WHERE id = $1', [id]);
 
       if (result.rowCount === 0) {
         await client.query('ROLLBACK');
@@ -222,7 +222,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
     const client = await this.db.connect();
 
     try {
-      let query = 'SELECT 1 FROM categorias WHERE name = $1 AND usuario_id = $2';
+      let query = 'SELECT 1 FROM categories WHERE name = $1 AND user_id = $2';
       const params: any[] = [name, userId];
 
       if (excludeId) {

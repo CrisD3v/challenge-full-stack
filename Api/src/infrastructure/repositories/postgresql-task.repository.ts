@@ -14,7 +14,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
 
     try {
       const insertQuery = `
-        INSERT INTO tareas (title, description, priority, due_date, user_id, category_id)
+        INSERT INTO tasks (title, description, priority, due_date, user_id, category_id)
         VALUES ($1, $2, $3, $4, $5, $6)
         RETURNING id, title, description, completed, priority, due_date,
                   user_id, category_id, created_at, updated_at
@@ -113,9 +113,9 @@ export class PostgreSQLTaskRepository implements TaskRepository {
         if (filters.tags && filters.tags.length > 0) {
           query += `
             AND t.id IN (
-              SELECT te.tarea_id
-              FROM tarea_etiquetas te
-              JOIN etiquetas e ON te.etiqueta_id = e.id
+              SELECT te.task_id
+              FROM task_tags te
+              JOIN tags e ON te.tag_id = e.id
               WHERE e.id = ANY($${paramIndex})
             )
           `;
@@ -177,7 +177,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
       const query = `
         SELECT id, title, description, completed, priority, due_date,
                user_id, category_id, created_at, updated_at
-        FROM tareas
+        FROM tasks
         WHERE id = $1
       `;
 
@@ -263,7 +263,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
       params.push(id);
 
       const query = `
-        UPDATE tareas
+        UPDATE tasks
         SET ${updateFields.join(', ')}
         WHERE id = $${paramIndex}
         RETURNING id, title, description, completed, priority, due_date,
@@ -323,7 +323,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
 
     try {
       const query = `
-        UPDATE tareas
+        UPDATE tasks
         SET completed = NOT completed, updated_at = $1
         WHERE id = $2
         RETURNING id, title, description, completed, priority, due_date,
@@ -367,7 +367,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
     const client = await this.db.connect();
 
     try {
-      let query = 'SELECT COUNT(*) FROM tareas t WHERE t.user_id = $1';
+      let query = 'SELECT COUNT(*) FROM tasks t WHERE t.user_id = $1';
       const params: any[] = [userId];
       let paramIndex = 2;
 
@@ -413,9 +413,9 @@ export class PostgreSQLTaskRepository implements TaskRepository {
         if (filters.tags && filters.tags.length > 0) {
           query += `
             AND t.id IN (
-              SELECT te.tarea_id
-              FROM tarea_etiquetas te
-              JOIN etiquetas e ON te.etiqueta_id = e.id
+              SELECT te.task_id
+              FROM task_tags te
+              JOIN etiquetas e ON te.tag_id = e.id
               WHERE e.id = ANY($${paramIndex})
             )
           `;

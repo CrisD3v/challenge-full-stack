@@ -15,7 +15,7 @@ export class PostgreSQLTagRepository implements TagRepository {
     try {
       // Check if tag name already exists for this user
       const existsResult = await client.query(
-        'SELECT id FROM etiquetas WHERE name = $1 AND usuario_id = $2',
+        'SELECT id FROM tags WHERE name = $1 AND usuario_id = $2',
         [tag.name, tag.userId]
       );
 
@@ -25,7 +25,7 @@ export class PostgreSQLTagRepository implements TagRepository {
 
       // Insert new tag
       const insertQuery = `
-        INSERT INTO etiquetas (name, usuario_id)
+        INSERT INTO tags (name, usuario_id)
         VALUES ($1, $2)
         RETURNING id, name, usuario_id
       `;
@@ -61,9 +61,9 @@ export class PostgreSQLTagRepository implements TagRepository {
 
     try {
       const query = `
-        SELECT id, name, usuario_id
-        FROM etiquetas
-        WHERE usuario_id = $1
+        SELECT id, name, user_id
+        FROM tags
+        WHERE user_id = $1
         ORDER BY name ASC
       `;
 
@@ -87,8 +87,8 @@ export class PostgreSQLTagRepository implements TagRepository {
 
     try {
       const query = `
-        SELECT id, name, usuario_id
-        FROM etiquetas
+        SELECT id, name, user_id
+        FROM tags
         WHERE id = $1
       `;
 
@@ -121,8 +121,8 @@ export class PostgreSQLTagRepository implements TagRepository {
 
     try {
       const query = `
-        SELECT id, name, usuario_id
-        FROM etiquetas
+        SELECT id, name, user_id
+        FROM tags
         WHERE id = ANY($1)
         ORDER BY name ASC
       `;
@@ -153,14 +153,14 @@ export class PostgreSQLTagRepository implements TagRepository {
       await client.query('BEGIN');
 
       // First, verify that the task exists
-      const taskResult = await client.query('SELECT id FROM tareas WHERE id = $1', [taskId]);
+      const taskResult = await client.query('SELECT id FROM tasks WHERE id = $1', [taskId]);
       if (taskResult.rows.length === 0) {
         throw new NotFoundError('Task not found');
       }
 
       // Verify that all tags exist
       const tagsResult = await client.query(
-        'SELECT id FROM etiquetas WHERE id = ANY($1)',
+        'SELECT id FROM tags WHERE id = ANY($1)',
         [tagIds]
       );
 
@@ -170,7 +170,7 @@ export class PostgreSQLTagRepository implements TagRepository {
 
       // Remove existing associations to avoid duplicates
       await client.query(
-        'DELETE FROM tarea_etiquetas WHERE tarea_id = $1 AND etiqueta_id = ANY($2)',
+        'DELETE FROM task_tags WHERE task_id = $1 AND tag_id = ANY($2)',
         [taskId, tagIds]
       );
 
@@ -180,7 +180,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       ).join(', ');
 
       const insertQuery = `
-        INSERT INTO tarea_etiquetas (tarea_id, etiqueta_id)
+        INSERT INTO tarea_tags (task_id, tag_id)
         VALUES ${insertValues}
       `;
 
@@ -207,8 +207,8 @@ export class PostgreSQLTagRepository implements TagRepository {
 
     try {
       const query = `
-        DELETE FROM tarea_etiquetas
-        WHERE tarea_id = $1 AND etiqueta_id = ANY($2)
+        DELETE FROM task_tags
+        WHERE task_id = $1 AND tag_id = ANY($2)
       `;
 
       await client.query(query, [taskId, tagIds]);
@@ -228,9 +228,9 @@ export class PostgreSQLTagRepository implements TagRepository {
     try {
       const query = `
         SELECT e.id, e.name, e.usuario_id
-        FROM etiquetas e
-        INNER JOIN tarea_etiquetas te ON e.id = te.etiqueta_id
-        WHERE te.tarea_id = $1
+        FROM tags e
+        INNER JOIN task_tags te ON e.id = te.tag_id
+        WHERE te.task_id = $1
         ORDER BY e.name ASC
       `;
 
@@ -253,7 +253,7 @@ export class PostgreSQLTagRepository implements TagRepository {
     const client = await this.db.connect();
 
     try {
-      const query = 'SELECT 1 FROM etiquetas WHERE name = $1 AND usuario_id = $2 LIMIT 1';
+      const query = 'SELECT 1 FROM tags WHERE name = $1 AND user_id = $2 LIMIT 1';
       const result = await client.query(query, [name, userId]);
       return result.rows.length > 0;
     } catch (error) {
@@ -272,7 +272,7 @@ export class PostgreSQLTagRepository implements TagRepository {
     const client = await this.db.connect();
 
     try {
-      const query = 'DELETE FROM tarea_etiquetas WHERE tarea_id = $1';
+      const query = 'DELETE FROM task_tags WHERE task_id = $1';
       await client.query(query, [taskId]);
 
       logger.info('All tags removed from task successfully', { taskId });
