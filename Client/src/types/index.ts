@@ -58,11 +58,11 @@ export interface RegisterData {
 
 export interface TaskFormData {
   title: string;
-  description?: string;
+  description?: string | undefined;
   priority: 'baja' | 'media' | 'alta';
-  dueDate?: string;
-  categoryId?: string;
-  tagIds?: string[];
+  dueDate?: string | undefined;
+  categoryId?: string | undefined;
+  tagIds?: string[] | undefined;
 }
 
 export interface FiltrosTareas {
