@@ -15,7 +15,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
     try {
       // Check if category name already exists for this user
       const existsResult = await client.query(
-        'SELECT id FROM categories WHERE name = $1 AND usuario_id = $2',
+        'SELECT id FROM categories WHERE name = $1 AND user_id = $2',
         [category.name, category.userId]
       );
 
@@ -25,7 +25,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
       // Insert new category
       const insertQuery = `
-        INSERT INTO categorias (name, color, user_id)
+        INSERT INTO categories (name, color, user_id)
         VALUES ($1, $2, $3)
         RETURNING id, name, color, user_id
       `;
@@ -40,7 +40,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
 
       logger.info('Category created successfully', {
         categoryId: row.id,
-        userId: row.usuario_id,
+        userId: row.user_id,
         name: row.name
       });
 
@@ -48,7 +48,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
         row.id,
         row.name,
         row.color,
-        row.usuario_id
+        row.user_id
       );
     } catch (error) {
       logger.error('Error creating category', { error, category });
@@ -75,7 +75,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
         row.id,
         row.name,
         row.color,
-        row.usuario_id
+        row.user_id
       ));
     } catch (error) {
       logger.error('Error finding categories by user ID', { error, userId });
@@ -106,7 +106,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
         row.id,
         row.name,
         row.color,
-        row.usuario_id
+        row.user_id
       );
     } catch (error) {
       logger.error('Error finding category by ID', { error, categoryId: id });
@@ -176,7 +176,7 @@ export class PostgreSQLCategoryRepository implements CategoryRepository {
         row.id,
         row.name,
         row.color,
-        row.usuario_id
+        row.user_id
       );
     } catch (error) {
       logger.error('Error updating category', { error, categoryId: id, updates });
