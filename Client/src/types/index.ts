@@ -9,8 +9,8 @@ export interface User {
 export interface Category {
   id: string;
   name: string;
-  description?: string;
-  color?: string;
+  description: string;
+  color: string;
   userId: string;
   createdAt: string;
   updatedAt: string;

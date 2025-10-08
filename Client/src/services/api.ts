@@ -169,7 +169,7 @@ class ApiService {
         return categorias;
     }
 
-    async crearCategoria(data: Omit<Category, 'id' | 'usuarioId' | 'createdAt' | 'updatedAt'>): Promise<Category> {
+    async crearCategoria(data: Omit<Category, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Category> {
         const response: AxiosResponse<Category> = await this.api.post('/categorias', data);
         return response.data;
     }
@@ -195,7 +195,7 @@ class ApiService {
         return etiquetas;
     }
 
-    async crearEtiqueta(data: Omit<Tag, 'id' | 'usuarioId' | 'createdAt' | 'updatedAt'>): Promise<Tag> {
+    async crearEtiqueta(data: Omit<Tag, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Tag> {
         const response: AxiosResponse<Tag> = await this.api.post('/etiquetas', data);
         return response.data;
     }
