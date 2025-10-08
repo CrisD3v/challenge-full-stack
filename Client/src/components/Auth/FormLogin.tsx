@@ -186,7 +186,7 @@ export function FormLogin({ onSwitchToRegister }: FormLoginProps) {
       )}
 
       {/* Debug info */}
-      <div style={{
+      {/* <div style={{
         background: '#f0f0f0',
         padding: '10px',
         margin: '10px 0',
@@ -199,7 +199,7 @@ export function FormLogin({ onSwitchToRegister }: FormLoginProps) {
         Token en localStorage: {localStorage.getItem('token') ? 'Presente' : 'Ausente'}<br />
         Loading: {isLoading ? 'Sí' : 'No'}<br />
         Error: {error || 'Ninguno'}
-      </div>
+      </div> */}
 
       <Form onSubmit={handleSubmit(onSubmit)}>
         <FormGroup>
