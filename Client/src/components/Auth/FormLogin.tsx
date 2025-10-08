@@ -234,7 +234,7 @@ export function FormLogin({ onSwitchToRegister }: FormLoginProps) {
           ¿No tienes cuenta? Regístrate
         </LinkButton>
 
-        {/* Botón de test directo */}
+        {/* Botón de test directo
         <button
           type="button"
           onClick={() => onSubmit({ email: 'demo@example.com', password: 'demo123' })}
@@ -248,10 +248,10 @@ export function FormLogin({ onSwitchToRegister }: FormLoginProps) {
           }}
         >
           TEST LOGIN DIRECTO
-        </button>
+        </button> */}
 
         {/* Botón para probar API con token */}
-        {token && (
+        {/* {token && (
           <button
             type="button"
             onClick={async () => {
@@ -282,7 +282,7 @@ export function FormLogin({ onSwitchToRegister }: FormLoginProps) {
           >
             TEST API CON TOKEN
           </button>
-        )}
+        )} */}
       </Form>
     </FormContainer >
   );
