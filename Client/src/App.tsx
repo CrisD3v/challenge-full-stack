@@ -5,6 +5,7 @@ import viteLogo from '/vite.svg'
 import { AuthPage } from './pages/AuthPage';
 import { ErrorBoundary } from './components/Commons/ErrorBoundary';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import './styles/globals.css'
 
 
@@ -47,11 +48,13 @@ function AppRoutes() {
 function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <Router>
-          <AppRoutes />
-        </Router>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <Router>
+            <AppRoutes />
+          </Router>
+        </AuthProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   );
 }
