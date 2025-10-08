@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import * as yup from 'yup';
-import { useCategorias } from '../../hooks/useCategorias';
+import { useCategories } from '../../hooks/useCategorias';
 import type { Category } from '../../types';
 import { generarColorAleatorio } from '../../utils/helpers';
 import { Loading } from '../Commons/Loading';
@@ -205,7 +205,7 @@ interface FormCategoryProps {
 }
 
 export function FormCategory({ category, onSuccess, onCancel }: FormCategoryProps) {
-    const { crearCategoria, actualizarCategoria, error, limpiarError } = useCategorias();
+    const { crearCategoria, actualizarCategoria, error, limpiarError } = useCategories();
 
     const {
         register,

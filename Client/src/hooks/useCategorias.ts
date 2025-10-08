@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { apiService } from '../services/api';
 import type { Category } from '../types';
 
-export function useCategorias() {
+export function useCategories() {
   const [categorias, setCategorias] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

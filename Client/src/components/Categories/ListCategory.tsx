@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { useCategorias } from '../../hooks/useCategorias';
+import { useCategories } from '../../hooks/useCategorias';
 import type { Category } from '../../types';
 import { Loading } from '../Commons/Loading';
 
@@ -147,7 +147,7 @@ interface ListCategoryProps {
 }
 
 export function ListCategory({ categorias, isLoading, onEditarCategoria }: ListCategoryProps) {
-    const { eliminarCategoria } = useCategorias();
+    const { eliminarCategoria } = useCategories();
 
     // Debug logs
     console.log('ListaCategorias - categorias recibidas:', categorias);

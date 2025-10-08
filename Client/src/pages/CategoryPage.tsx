@@ -5,7 +5,7 @@ import { ListCategory } from '../components/Categories/ListCategory';
 import { Loading } from '../components/Commons/Loading';
 import { ErrorMessage } from '../components/Commons/ErrorMessage';
 import { Modal } from '../components/Commons/Modal';
-import { useCategorias } from '../hooks/useCategorias';
+import { useCategories } from '../hooks/useCategorias';
 
 const PageContainer = styled.div`
   max-width: 1000px;
@@ -60,7 +60,7 @@ const Description = styled.p`
 `;
 
 export function CategoryPage() {
-    const { categorias, isLoading, error, limpiarError } = useCategorias();
+    const { categorias, isLoading, error, limpiarError } = useCategories();
     const [modalAbierto, setModalAbierto] = useState(false);
     const [categoriaEditando, setCategoriaEditando] = useState(null);
 
