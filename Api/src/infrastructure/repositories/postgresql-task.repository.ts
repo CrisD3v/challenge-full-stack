@@ -64,7 +64,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
         SELECT t.id, t.title, t.description, t.completed, t.priority,
                t.due_date, t.user_id, t.category_id,
                t.created_at, t.updated_at
-        FROM tareas t
+        FROM tasks t
         WHERE t.user_id = $1
       `;
 
@@ -303,7 +303,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
       await client.query('DELETE FROM tarea_etiquetas WHERE tarea_id = $1', [id]);
 
       // Then delete the task
-      const result = await client.query('DELETE FROM tareas WHERE id = $1', [id]);
+      const result = await client.query('DELETE FROM tasks WHERE id = $1', [id]);
 
       if (result.rowCount === 0) {
         throw new NotFoundError('Task not found');
