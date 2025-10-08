@@ -29,15 +29,15 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={<AuthPage />}
+        element={usuario ? <Navigate to="/dashboard" replace /> : <AuthPage />}
       />
       <Route
         path="/dashboard/*"
-        element={<AuthPage />}
+        element={usuario ? <AuthPage /> : <Navigate to="/login" replace />}
       />
       <Route
         path="/"
-        element={<AuthPage />}
+        element={<Navigate to={usuario ? "/dashboard" : "/login"} replace />}
       />
 
     </Routes>
