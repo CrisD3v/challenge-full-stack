@@ -12,7 +12,11 @@
     "test:all": "npm run test && npm run test:integration",
     "db:migrate": "node scripts/migrate.js up",
     "db:migrate:status": "node scripts/migrate.js status",
-    "db:migrate:reset": "node scripts/migrate.js reset"
+    "db:migrate:reset": "node scripts/migrate.js reset",
+    "db:setup": "node scripts/setup-database.js",
+    "db:setup:seed": "node scripts/setup-database.js --seed",
+    "db:seed": "node scripts/seed-database.js",
+    "db:rollback": "node scripts/rollback-database.js"
   },
   "keywords": [
     "task-management",
