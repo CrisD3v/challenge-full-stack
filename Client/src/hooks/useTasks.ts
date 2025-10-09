@@ -1,175 +1,116 @@
 import { useCallback, useEffect, useState } from 'react';
-import { apiService } from '../services/api';
 import type { FiltrosTareas, OrdenTareas, Task, TaskFormData } from '../types';
+import { useTaskMutationsSimple as useTaskMutations } from './useTaskMutationsSimple';
+import { useTasksQuery } from './useTasksQuery';
 
 export function useTasks() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [filtros, setFiltros] = useState<FiltrosTareas>({});
   const [orden, setOrden] = useState<OrdenTareas>({ field: 'createdAt', direction: 'desc' });
 
-  // Función helper para asegurar que siempre sea un array
-  const ensureArray = (data: any): Task[] => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && Array.isArray(data.tareas)) return data.tareas;
-    if (data && typeof data === 'object' && Array.isArray(data.data)) return data.data;
-    console.warn('Datos de tareas no son un array:', data);
-    return [];
-  };
+  // Use the new query-based hooks
+  const {
+    tasks,
+    isLoading,
+    error,
+    refetch
+  } = useTasksQuery(filtros, orden);
 
-  const cargarTareas = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      // console.log('useTareas - Cargando tareas...');
-      const tareasObtenidas = await apiService.obtenerTareas(filtros, orden);
-      // console.log('useTareas - Tareas obtenidas:', tareasObtenidas);
-
-      // Verificar que sea un array
-      const tareasArray = ensureArray(tareasObtenidas);
-      // console.log('useTareas - Tareas como array:', tareasArray);
-
-      setTasks(tareasArray);
-    } catch (err: any) {
-      console.error('useTareas - Error al cargar tareas:', err);
-      setError(err.response?.data?.message || 'Error al cargar las tareas');
-      setTasks([]); // Asegurar que siempre sea un array
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filtros, orden]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    // console.log('useTareas useEffect - Token:', token ? 'Presente' : 'Ausente');
-    if (token) {
-      // console.log('useTareas useEffect - Cargando tareas porque hay token');
-      cargarTareas();
-    } else {
-      // console.log('useTareas useEffect - No hay token, no cargando tareas');
-    }
-  }, [cargarTareas]);
+  const {
+    createTaskAsync,
+    updateTaskAsync,
+    deleteTaskAsync,
+    toggleCompleteTaskAsync,
+    batchOperationsAsync,
+    createError,
+    updateError,
+    deleteError,
+    toggleError,
+    batchError,
+    resetCreateError,
+    resetUpdateError,
+    resetDeleteError,
+    resetToggleError,
+    resetBatchError,
+  } = useTaskMutations(filtros, orden);
 
   // Escuchar evento de login exitoso
   useEffect(() => {
     const handleUserLoggedIn = () => {
-      // console.log('useTareas - Usuario logueado, recargando tareas');W
-      cargarTareas();
+      // console.log('useTareas - Usuario logueado, recargando tareas');
+      refetch();
     };
 
     window.addEventListener('userLoggedIn', handleUserLoggedIn);
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn);
-  }, [cargarTareas]);
+  }, [refetch]);
 
   const crearTarea = async (data: TaskFormData): Promise<Task> => {
     try {
-      setError(null);
-      const newTask = await apiService.crearTarea(data);
-
-      // Actualización optimista
-      setTasks(prev => [newTask, ...prev]);
-
+      resetCreateError();
+      const newTask = await createTaskAsync(data);
       return newTask;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear la tarea');
-      throw err;
+      const errorMessage = createError
+        ? (createError as any)?.response?.data?.message || 'Error al crear la tarea'
+        : 'Error al crear la tarea';
+      throw new Error(errorMessage);
     }
   };
 
   const actualizarTarea = async (id: string, data: Partial<TaskFormData>): Promise<Task> => {
     try {
-      setError(null);
-
-      // Actualización optimista
-      setTasks(prev => prev.map(tasks =>
-        tasks.id === id ? { ...tasks, ...data } : tasks
-      ));
-
-      const tareaActualizada = await apiService.actualizarTarea(id, data);
-
-      // Actualizar con los datos reales del servidor
-      setTasks(prev => prev.map(tarea =>
-        tarea.id === id ? tareaActualizada : tarea
-      ));
-
+      resetUpdateError();
+      const tareaActualizada = await updateTaskAsync(id, data);
       return tareaActualizada;
     } catch (err: any) {
-      // Revertir la actualización optimista en caso de error
-      await cargarTareas();
-      setError(err.response?.data?.message || 'Error al actualizar la tarea');
-      throw err;
+      const errorMessage = updateError
+        ? (updateError as any)?.response?.data?.message || 'Error al actualizar la tarea'
+        : 'Error al actualizar la tarea';
+      throw new Error(errorMessage);
     }
   };
 
   const eliminarTarea = async (id: string): Promise<void> => {
     try {
-      setError(null);
-
-      // Actualización optimista
-      const tareaEliminada = tasks.find(t => t.id === id);
-      setTasks(prev => prev.filter(task => task.id !== id));
-
-      await apiService.eliminarTarea(id);
+      resetDeleteError();
+      await deleteTaskAsync(id);
     } catch (err: any) {
-      // Revertir la actualización optimista en caso de error
-      await cargarTareas();
-      setError(err.response?.data?.message || 'Error al eliminar la tarea');
-      throw err;
+      const errorMessage = deleteError
+        ? (deleteError as any)?.response?.data?.message || 'Error al eliminar la tarea'
+        : 'Error al eliminar la tarea';
+      throw new Error(errorMessage);
     }
   };
 
   const toggleCompletarTarea = async (id: string): Promise<void> => {
     try {
-      setError(null);
-
-      // Actualización optimista
-      setTasks(prev => prev.map(task =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      ));
-
-      const tareaActualizada = await apiService.toggleCompletarTarea(id);
-
-      // Actualizar con los datos reales del servidor
-      setTasks(prev => prev.map(tarea =>
-        tarea.id === id ? tareaActualizada : tarea
-      ));
+      resetToggleError();
+      await toggleCompleteTaskAsync(id);
     } catch (err: any) {
-      // Revertir la actualización optimista en caso de error
-      await cargarTareas();
-      setError(err.response?.data?.message || 'Error al cambiar el estado de la tarea');
-      throw err;
+      const errorMessage = toggleError
+        ? (toggleError as any)?.response?.data?.message || 'Error al cambiar el estado de la tarea'
+        : 'Error al cambiar el estado de la tarea';
+      throw new Error(errorMessage);
     }
   };
 
   const operacionesLote = async (ids: string[], operation: 'completar' | 'eliminar'): Promise<void> => {
     try {
-      setError(null);
-
-      // Actualización optimista
-      if (operation === 'eliminar') {
-        setTasks(prev => prev.filter(task => !ids.includes(task.id)));
-      } else if (operation === 'completar') {
-        setTasks(prev => prev.map(task =>
-          ids.includes(task.id) ? { ...task, completed: true } : task
-        ));
-      }
-
-      await apiService.operacionesLote(ids, operation);
+      resetBatchError();
+      await batchOperationsAsync(ids, operation);
     } catch (err: any) {
-      // Revertir la actualización optimista en caso de error
-      await cargarTareas();
-      setError(err.response?.data?.message || 'Error en la operación en lote');
-      throw err;
+      const errorMessage = batchError
+        ? (batchError as any)?.response?.data?.message || 'Error en la operación en lote'
+        : 'Error en la operación en lote';
+      throw new Error(errorMessage);
     }
   };
 
-  const reordenarTareas = (startIndex: number, endIndex: number) => {
-    const tareasArray = ensureArray(tasks);
-    const result = Array.from(tareasArray);
-    const [removed] = result.splice(startIndex, 1);
-    result.splice(endIndex, 0, removed);
-    setTasks(result);
+  const reordenarTareas = (_startIndex: number, _endIndex: number) => {
+    // For reordering, we'll need to implement local state management
+    // since this is a UI-only operation that doesn't persist to server
+    // This functionality might need to be handled differently in the components
+    console.warn('reordenarTareas: This function needs to be implemented at component level for TanStack Query');
   };
 
   const aplicarFiltros = (nuevosFiltros: FiltrosTareas) => {
@@ -180,8 +121,17 @@ export function useTasks() {
     setOrden(nuevoOrden);
   };
 
+  const cargarTareas = useCallback(async () => {
+    await refetch();
+  }, [refetch]);
+
   const limpiarError = () => {
-    setError(null);
+    // Clear all mutation errors
+    resetCreateError();
+    resetUpdateError();
+    resetDeleteError();
+    resetToggleError();
+    resetBatchError();
   };
 
   return {
