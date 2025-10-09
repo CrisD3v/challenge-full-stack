@@ -3,12 +3,21 @@ import styled from 'styled-components';
 import { Loading } from '../components/Commons/Loading';
 import { ErrorMessage } from '../components/Commons/ErrorMessage';
 import { useTasks } from '../hooks/useTasks';
+import { useCategories } from '../hooks/useCategorias';
 import { apiService } from '../services/api';
 import type { StatisticsTasks } from '../types';
 
 const PageContainer = styled.div`
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 1rem;
+  width: 100%;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  
+  @media (max-width: 480px) {
+    padding: 0 0.75rem;
+  }
 `;
 
 const PageHeader = styled.div`
@@ -30,9 +39,20 @@ const PageDescription = styled.p`
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1.5rem;
   margin-bottom: 2rem;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+  
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 `;
 
 const StatCard = styled.div`
@@ -42,10 +62,17 @@ const StatCard = styled.div`
   padding: 1.5rem;
   box-shadow: 0 1px 3px var(--color-shadow-light);
   transition: transform 0.2s, box-shadow 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Permite que el contenido se contraiga */
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px var(--color-shadow);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 1rem;
   }
 `;
 
@@ -78,9 +105,15 @@ const ChartsSection = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
   margin-bottom: 2rem;
+  width: 100%;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  
+  @media (max-width: 480px) {
+    gap: 1rem;
   }
 `;
 
@@ -90,6 +123,13 @@ const ChartCard = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px var(--color-shadow-light);
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Permite que el contenido se contraiga */
+  
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 `;
 
 const ChartTitle = styled.h3`
@@ -147,26 +187,107 @@ const CategoryChart = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  max-height: 350px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  
+  /* Estilos para el scrollbar - más sutil */
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 2px;
+    opacity: 0.5;
+  }
+  
+  /* Solo mostrar scrollbar al hacer hover en el contenedor */
+  &:hover::-webkit-scrollbar-thumb {
+    opacity: 0.8;
+  }
+  
+  /* Para Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
 `;
 
 const CategoryItem = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5rem;
+  padding: 0.75rem;
   background-color: var(--color-bg-secondary);
-  border-radius: 6px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0; /* Permite que el contenido se contraiga */
+  
+  &:hover {
+    background-color: var(--color-bg);
+    border-color: var(--color-border);
+  }
+  
+  @media (max-width: 480px) {
+    padding: 0.5rem;
+  }
 `;
 
 const CategoryName = styled.span`
   font-size: 0.875rem;
   color: var(--color-text);
+  flex: 1;
+  min-width: 0; /* Permite que el texto se trunque si es necesario */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-right: 0.5rem;
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+  }
+`;
+
+const CategoryStats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0; /* No se contrae */
+  
+  @media (max-width: 480px) {
+    gap: 0.25rem;
+  }
 `;
 
 const CategoryCount = styled.span`
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--color-text);
+  min-width: 2rem;
+  text-align: right;
+  
+  @media (max-width: 480px) {
+    font-size: 0.8rem;
+    min-width: 1.5rem;
+  }
+`;
+
+const CategoryPercentage = styled.span`
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  min-width: 3rem;
+  text-align: right;
+  
+  @media (max-width: 480px) {
+    font-size: 0.7rem;
+    min-width: 2.5rem;
+  }
 `;
 
 const ProgressSection = styled.div`
@@ -175,6 +296,12 @@ const ProgressSection = styled.div`
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 1px 3px var(--color-shadow-light);
+  width: 100%;
+  box-sizing: border-box;
+  
+  @media (max-width: 480px) {
+    padding: 1rem;
+  }
 `;
 
 const ProgressTitle = styled.h3`
@@ -208,6 +335,7 @@ const ProgressText = styled.div`
 
 export function StaticsPage() {
   const { tasks, isLoading: tareasLoading, error } = useTasks();
+  const { categorias, isLoading: categoriasLoading } = useCategories();
   const [estadisticas, setEstadisticas] = useState<StatisticsTasks | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
 
@@ -229,10 +357,16 @@ export function StaticsPage() {
     }
   }, [tareasLoading]);
 
-  const isLoading = tareasLoading || isLoadingStats;
+  const isLoading = tareasLoading || isLoadingStats || categoriasLoading;
 
-  // Asegurar que tareas sea un array
+  // Asegurar que tareas y categorías sean arrays
   const tareasArray = Array.isArray(tasks) ? tasks : [];
+  const categoriasArray = Array.isArray(categorias) ? categorias : [];
+
+  // Crear un mapa de ID de categoría a nombre para búsqueda rápida
+  const categoryMap = new Map(
+    categoriasArray.map(cat => [cat.id, cat.name])
+  );
 
   // Calcular estadísticas locales si no hay del servidor
   const statsLocales = {
@@ -244,16 +378,40 @@ export function StaticsPage() {
       media: tareasArray.filter(t => t.priority === 'media').length,
       baja: tareasArray.filter(t => t.priority === 'baja').length,
     },
-    perCategory: tareasArray.reduce((acc, tarea) => {
-      const category = tarea.categories?.name || 'Sin categoría';
-      const existing = acc.find(item => item.category === category);
-      if (existing) {
-        existing.total++;
-      } else {
-        acc.push({ category, total: 1 });
-      }
-      return acc;
-    }, [] as Array<{ category: string; total: number }>),
+    perCategory: (() => {
+      const categoryCountMap = new Map<string, number>();
+
+      tareasArray.forEach(tarea => {
+        let categoryName: string;
+
+        // Priorizar el nombre de la categoría si está disponible en el objeto
+        if (tarea.categories?.name) {
+          categoryName = tarea.categories.name;
+        }
+        // Si no, buscar por categoryId en el mapa de categorías
+        else if (tarea.categoryId && categoryMap.has(tarea.categoryId)) {
+          categoryName = categoryMap.get(tarea.categoryId)!;
+        }
+        // Si no tiene categoría asignada
+        else {
+          categoryName = 'Sin categoría';
+        }
+
+        const currentCount = categoryCountMap.get(categoryName) || 0;
+        categoryCountMap.set(categoryName, currentCount + 1);
+      });
+
+      // Convertir el Map a array y ordenar
+      return Array.from(categoryCountMap.entries())
+        .map(([category, total]) => ({ category, total }))
+        .sort((a, b) => {
+          // Poner "Sin categoría" al final
+          if (a.category === 'Sin categoría') return 1;
+          if (b.category === 'Sin categoría') return -1;
+          // Ordenar el resto alfabéticamente
+          return a.category.localeCompare(b.category);
+        });
+    })(),
   };
 
   const stats = estadisticas || statsLocales;
@@ -345,19 +503,35 @@ export function StaticsPage() {
           <ChartTitle>Tareas por Categoría</ChartTitle>
           <CategoryChart>
             {stats.perCategory.length > 0 ? (
-              stats.perCategory.map((item, index) => (
-                <CategoryItem key={index}>
-                  <CategoryName>{item.category}</CategoryName>
-                  <CategoryCount>{item.total}</CategoryCount>
-                </CategoryItem>
-              ))
+              stats.perCategory.map((item, index) => {
+                const percentage = stats.total > 0 ? ((item.total / stats.total) * 100).toFixed(1) : '0.0';
+                return (
+                  <CategoryItem key={`${item.category}-${index}`}>
+                    <CategoryName
+                      style={{
+                        fontStyle: item.category === 'Sin categoría' ? 'italic' : 'normal',
+                        color: item.category === 'Sin categoría' ?
+                          'var(--color-text-secondary)' :
+                          'var(--color-text)'
+                      }}
+                    >
+                      {item.category === 'Sin categoría' ? '📝 Sin categoría' : `📁 ${item.category}`}
+                    </CategoryName>
+                    <CategoryStats>
+                      <CategoryCount>{item.total}</CategoryCount>
+                      <CategoryPercentage>({percentage}%)</CategoryPercentage>
+                    </CategoryStats>
+                  </CategoryItem>
+                );
+              })
             ) : (
               <div style={{
                 textAlign: 'center',
                 color: 'var(--color-text-secondary)',
-                padding: '2rem'
+                padding: '2rem',
+                fontStyle: 'italic'
               }}>
-                No hay datos de categorías
+                📝 No hay tareas registradas
               </div>
             )}
           </CategoryChart>
