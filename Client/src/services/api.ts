@@ -4,12 +4,12 @@ import { config, logger } from '../config/env';
 import type {
     AuthResponse,
     Category,
-    StatisticsTasks,
-    Tag,
     FiltrosTareas,
     LoginData,
     OrdenTareas,
     RegisterData,
+    StatisticsTasks,
+    Tag,
     Task,
     TaskFormData
 } from '../types';
@@ -69,6 +69,19 @@ class ApiService {
                     // logger.log('API Response Interceptor - Token inválido, limpiando localStorage');
                     localStorage.removeItem(config.auth.tokenStorageKey);
                     localStorage.removeItem('usuario');
+
+                    // Clear cache on token expiration
+                    try {
+                        // Dynamic import to avoid circular dependency
+                        import('../utils/authEvents').then(({ authEvents }) => {
+                            authEvents.onTokenExpired();
+                        }).catch(error => {
+                            console.warn('Could not handle token expiration event:', error);
+                        });
+                    } catch (error) {
+                        console.warn('Auth events not available for token expiration:', error);
+                    }
+
                     window.location.href = '/login';
                 }
 
@@ -149,7 +162,7 @@ class ApiService {
     }
 
     async toggleCompletarTarea(id: string): Promise<Task> {
-        const response: AxiosResponse<Task> = await this.api.patch(`/tareas/${id}/toggle`);
+        const response: AxiosResponse<Task> = await this.api.patch(`/tareas/${id}/completar`);
         return response.data;
     }
 

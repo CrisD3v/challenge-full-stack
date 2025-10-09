@@ -1,55 +1,34 @@
-import { useCallback, useEffect, useState } from 'react';
-import { apiService } from '../services/api';
+import { useEffect, useState } from 'react';
 import type { Category } from '../types';
+import { useCategoriesQuery } from './useCategoriesQuery';
+import { useCategoryMutations } from './useCategoryMutations';
 
+/**
+ * Main useCategories hook that combines query and mutation functionality
+ * Maintains exact same public interface as the original implementation
+ * Now powered by TanStack Query for better caching and optimistic updates
+ */
 export function useCategories() {
-  const [categorias, setCategorias] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Use the new TanStack Query-based hooks
+  const {
+    categorias,
+    isLoading: queryLoading,
+    error: queryError,
+    cargarCategorias,
+  } = useCategoriesQuery();
 
-  // Función helper para asegurar que siempre sea un array
-  const ensureArray = (data: any): Category[] => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && Array.isArray(data.categorias)) return data.categorias;
-    if (data && typeof data === 'object' && Array.isArray(data.data)) return data.data;
-    console.warn('Datos de categorías no son un array:', data);
-    return [];
-  };
+  const {
+    crearCategoria: createMutation,
+    actualizarCategoria: updateMutation,
+    eliminarCategoria: deleteMutation,
+    isMutating,
+    mutationError,
+  } = useCategoryMutations();
 
-  const cargarCategorias = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      console.log('useCategorias - Cargando categorías...');
-      const categoriasObtenidas = await apiService.obtenerCategorias();
-      console.log('useCategorias - Categorías obtenidas:', categoriasObtenidas);
+  // Local error state to maintain compatibility
+  const [localError, setLocalError] = useState<string | null>(null);
 
-      // Verificar que sea un array
-      const categoriasArray = ensureArray(categoriasObtenidas);
-      console.log('useCategorias - Categorías como array:', categoriasArray);
-
-      setCategorias(categoriasArray);
-    } catch (err: any) {
-      console.error('useCategorias - Error al cargar categorías:', err);
-      setError(err.response?.data?.message || 'Error al cargar las categorías');
-      setCategorias([]); // Asegurar que siempre sea un array
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log('useCategorias useEffect - Token:', token ? 'Presente' : 'Ausente');
-    if (token) {
-      console.log('useCategorias useEffect - Cargando categorías porque hay token');
-      cargarCategorias();
-    } else {
-      console.log('useCategorias useEffect - No hay token, no cargando categorías');
-    }
-  }, [cargarCategorias]);
-
-  // Escuchar evento de login exitoso
+  // Listen for successful login events to refetch data
   useEffect(() => {
     const handleUserLoggedIn = () => {
       console.log('useCategorias - Usuario logueado, recargando categorías');
@@ -60,56 +39,53 @@ export function useCategories() {
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn);
   }, [cargarCategorias]);
 
+  // Wrapper functions to maintain exact same interface and error handling
   const crearCategoria = async (data: Omit<Category, 'id' | 'userId' | 'createdAt' | 'updatedAt'>): Promise<Category> => {
     try {
-      setError(null);
-      const nuevaCategoria = await apiService.crearCategoria(data);
-      setCategorias(prev => {
-        const prevArray = ensureArray(prev);
-        return [...prevArray, nuevaCategoria];
-      });
-      return nuevaCategoria;
+      setLocalError(null);
+      const result = await createMutation(data);
+      return result;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear la categoría');
+      const errorMessage = err.response?.data?.message || 'Error al crear la categoría';
+      setLocalError(errorMessage);
       throw err;
     }
   };
 
   const actualizarCategoria = async (id: string, data: Partial<Category>): Promise<Category> => {
     try {
-      setError(null);
-      const categoriaActualizada = await apiService.actualizarCategoria(id, data);
-      setCategorias(prev => {
-        const prevArray = ensureArray(prev);
-        return prevArray.map(categoria =>
-          categoria.id === id ? categoriaActualizada : categoria
-        );
-      });
-      return categoriaActualizada;
+      setLocalError(null);
+      const result = await updateMutation(id, data);
+      return result;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al actualizar la categoría');
+      const errorMessage = err.response?.data?.message || 'Error al actualizar la categoría';
+      setLocalError(errorMessage);
       throw err;
     }
   };
 
   const eliminarCategoria = async (id: string): Promise<void> => {
     try {
-      setError(null);
-      await apiService.eliminarCategoria(id);
-      setCategorias(prev => {
-        const prevArray = ensureArray(prev);
-        return prevArray.filter(categoria => categoria.id !== id);
-      });
+      setLocalError(null);
+      await deleteMutation(id);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al eliminar la categoría');
+      const errorMessage = err.response?.data?.message || 'Error al eliminar la categoría';
+      setLocalError(errorMessage);
       throw err;
     }
   };
 
   const limpiarError = () => {
-    setError(null);
+    setLocalError(null);
   };
 
+  // Combine loading states (query loading or any mutation in progress)
+  const isLoading = queryLoading || isMutating;
+
+  // Combine error states (prioritize local error, then mutation error, then query error)
+  const error = localError || mutationError || queryError;
+
+  // Return the exact same interface as the original hook
   return {
     categorias,
     isLoading,

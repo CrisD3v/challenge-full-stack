@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useReducer } from 'react';
 import { apiService } from '../services/api';
 import type { LoginData, RegisterData, User } from '../types';
+import { authEvents } from '../utils/authEvents';
 
 interface AuthState {
   usuario: User | null;
@@ -84,6 +85,8 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
+
+
   useEffect(() => {
     // Verificar si hay un token guardado al cargar la aplicación
     console.log('AuthProvider useEffect - Verificando localStorage...');
@@ -132,8 +135,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       console.log('Login dispatch exitoso');
 
-      // Disparar evento personalizado para que los hooks recarguen datos
-      window.dispatchEvent(new CustomEvent('userLoggedIn'));
+      // Handle login with cache management
+      await authEvents.onLogin(response.usuario);
     } catch (error: any) {
       console.error('Error en login contexto:', error);
       const errorMessage = error.response?.data?.message || 'Error al iniciar sesión';
@@ -158,6 +161,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           token: response.token,
         },
       });
+
+      // Handle login with cache management
+      await authEvents.onLogin(response.usuario);
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Error al registrarse';
       dispatch({ type: 'LOGIN_ERROR', payload: errorMessage });
@@ -172,6 +178,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // Continuar con el logout aunque falle la llamada al servidor
       console.error('Error al hacer logout:', error);
     } finally {
+      // Handle logout with cache cleanup
+      await authEvents.onLogout();
+
       // Limpiar localStorage y estado
       localStorage.removeItem('token');
       localStorage.removeItem('usuario');

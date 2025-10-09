@@ -51,12 +51,6 @@ export function useCategoryMutations() {
       // Return a context object with the snapshotted value
       return { previousCategories, optimisticCategory };
     },
-    onError: (_err, _newCategory, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
-      if (context?.previousCategories) {
-        queryClient.setQueryData(queryKeys.categoriesList(), context.previousCategories);
-      }
-    },
     onSuccess: (data, _variables, context) => {
       // Replace the optimistic category with the real one
       queryClient.setQueryData<Category[]>(queryKeys.categoriesList(), (old) => {

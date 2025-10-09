@@ -1,101 +1,86 @@
-import { useCallback, useEffect, useState } from 'react';
-import { apiService } from '../services/api';
+import { useEffect, useState } from 'react';
 import type { Tag } from '../types';
+import { useTagMutations } from './useTagMutations';
+import { useTagsQuery } from './useTagsQuery';
 
+/**
+ * Hook principal para gestión de etiquetas usando TanStack Query
+ * Mantiene la misma interfaz pública que la implementación anterior
+ * para garantizar compatibilidad con componentes existentes
+ */
 export function useTags() {
-  const [etiquetas, setEtiquetas] = useState<Tag[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [localError, setLocalError] = useState<string | null>(null);
 
-  // Función helper para asegurar que siempre sea un array
-  const ensureArray = (data: any): Tag[] => {
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && Array.isArray(data.etiquetas)) return data.etiquetas;
-    if (data && typeof data === 'object' && Array.isArray(data.data)) return data.data;
-    console.warn('Datos de etiquetas no son un array:', data);
-    return [];
-  };
+  // Usar los nuevos hooks basados en TanStack Query
+  const {
+    etiquetas,
+    isLoading,
+    error: queryError,
+    refetch
+  } = useTagsQuery();
 
-  const cargarEtiquetas = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      console.log('useEtiquetas - Cargando etiquetas...');
-      const etiquetasObtenidas = await apiService.obtenerEtiquetas();
-      console.log('useEtiquetas - Etiquetas obtenidas:', etiquetasObtenidas);
+  const {
+    createTagAsync,
+    deleteTagAsync,
+    isCreating,
+    isDeleting,
+    createError,
+    deleteError
+  } = useTagMutations();
 
-      // Verificar que sea un array
-      const etiquetasArray = ensureArray(etiquetasObtenidas);
-      console.log('useEtiquetas - Etiquetas como array:', etiquetasArray);
+  // Combinar errores de query y mutaciones
+  const error = localError || queryError || createError || deleteError;
 
-      setEtiquetas(etiquetasArray);
-    } catch (err: any) {
-      console.error('useEtiquetas - Error al cargar etiquetas:', err);
-      setError(err.response?.data?.message || 'Error al cargar las etiquetas');
-      setEtiquetas([]); // Asegurar que siempre sea un array
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    console.log('useEtiquetas useEffect - Token:', token ? 'Presente' : 'Ausente');
-    if (token) {
-      console.log('useEtiquetas useEffect - Cargando etiquetas porque hay token');
-      cargarEtiquetas();
-    } else {
-      console.log('useEtiquetas useEffect - No hay token, no cargando etiquetas');
-    }
-  }, [cargarEtiquetas]);
-
-  // Escuchar evento de login exitoso
+  // Escuchar evento de login exitoso para refrescar datos
   useEffect(() => {
     const handleUserLoggedIn = () => {
-      console.log('useEtiquetas - Usuario logueado, recargando etiquetas');
-      cargarEtiquetas();
+      console.log('useTags - Usuario logueado, recargando etiquetas');
+      refetch();
     };
 
     window.addEventListener('userLoggedIn', handleUserLoggedIn);
     return () => window.removeEventListener('userLoggedIn', handleUserLoggedIn);
-  }, [cargarEtiquetas]);
+  }, [refetch]);
 
+  // Función para crear etiqueta manteniendo la interfaz original
   const crearEtiqueta = async (data: Omit<Tag, 'id' | 'usuarioId' | 'createdAt' | 'updatedAt'>): Promise<Tag> => {
     try {
-      setError(null);
-      const nuevaEtiqueta = await apiService.crearEtiqueta(data);
-      setEtiquetas(prev => {
-        const prevArray = ensureArray(prev);
-        return [...prevArray, nuevaEtiqueta];
-      });
+      setLocalError(null);
+      const nuevaEtiqueta = await createTagAsync(data);
       return nuevaEtiqueta;
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al crear la etiqueta');
+      const errorMessage = err.response?.data?.message || 'Error al crear la etiqueta';
+      setLocalError(errorMessage);
       throw err;
     }
   };
 
+  // Función para eliminar etiqueta manteniendo la interfaz original
   const eliminarEtiqueta = async (id: string): Promise<void> => {
     try {
-      setError(null);
-      await apiService.eliminarEtiqueta(id);
-      setEtiquetas(prev => {
-        const prevArray = ensureArray(prev);
-        return prevArray.filter(etiqueta => etiqueta.id !== id);
-      });
+      setLocalError(null);
+      await deleteTagAsync(id);
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Error al eliminar la etiqueta');
+      const errorMessage = err.response?.data?.message || 'Error al eliminar la etiqueta';
+      setLocalError(errorMessage);
       throw err;
     }
   };
 
+  // Función para cargar etiquetas manualmente (mantener compatibilidad)
+  const cargarEtiquetas = () => {
+    setLocalError(null);
+    refetch();
+  };
+
+  // Función para limpiar errores
   const limpiarError = () => {
-    setError(null);
+    setLocalError(null);
   };
 
   return {
     etiquetas,
-    isLoading,
+    isLoading: isLoading || isCreating || isDeleting,
     error,
     crearEtiqueta,
     eliminarEtiqueta,
