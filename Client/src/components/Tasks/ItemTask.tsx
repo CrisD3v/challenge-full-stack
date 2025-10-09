@@ -73,6 +73,12 @@ const TaskContent = styled.div`
 const TaskCheckbox = styled.input`
   margin-top: 0.25rem;
   cursor: pointer;
+
+  /* Estado deshabilitado durante operaciones en lote */
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 `;
 
 const TaskMain = styled.div`
@@ -240,6 +246,7 @@ interface ItemTaskProps {
   seleccionada: boolean;
   onSeleccionar: (seleccionada: boolean) => void;
   onEditar: () => void;
+  disabled?: boolean; // Para deshabilitar durante operaciones en lote
   isDragging?: boolean;
   isDragOver?: boolean;
   onDragStart?: (e: React.DragEvent) => void;
@@ -254,6 +261,7 @@ export function ItemTask({
   seleccionada,
   onSeleccionar,
   onEditar,
+  disabled = false,
   isDragging = false,
   isDragOver = false,
   onDragStart,
@@ -304,6 +312,7 @@ export function ItemTask({
         <TaskCheckbox
           type="checkbox"
           checked={seleccionada}
+          disabled={disabled}
           onChange={(e) => onSeleccionar(e.target.checked)}
         />
 

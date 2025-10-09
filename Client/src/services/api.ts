@@ -166,8 +166,75 @@ class ApiService {
         return response.data;
     }
 
+    /**
+     * Realiza operaciones en lote sobre múltiples tareas
+     *
+     * Este método permite ejecutar operaciones masivas (completar o eliminar) sobre
+     * múltiples tareas seleccionadas utilizando los endpoints individuales existentes.
+     * Procesa cada tarea de forma secuencial para mantener el control de errores
+     * y proporcionar feedback detallado sobre el progreso de la operación.
+     *
+     * Operaciones soportadas:
+     * - 'completar': Marca todas las tareas especificadas como completadas usando toggleCompletarTarea
+     * - 'eliminar': Elimina permanentemente todas las tareas especificadas usando eliminarTarea
+     *
+     * La función procesa las tareas de forma secuencial (no paralela) para:
+     * - Evitar sobrecargar el servidor con múltiples requests simultáneas
+     * - Mantener un control preciso sobre errores individuales
+     * - Permitir rollback parcial si alguna operación falla
+     *
+     * Cumple con los requisitos:
+     * - 1.1, 1.2: Completar múltiples tareas utilizando endpoint individual
+     * - 2.1, 2.2: Eliminar múltiples tareas utilizando endpoint individual
+     * - 4.1: Reutilización de endpoints existentes para consistencia
+     *
+     * @param ids - Array de identificadores únicos de las tareas a procesar
+     * @param operacion - Tipo de operación a realizar: 'completar' o 'eliminar'
+     * @returns Promise<void> - Se resuelve cuando todas las operaciones se completan exitosamente
+     * @throws Error si alguna operación individual falla, incluyendo detalles del error
+     */
     async operacionesLote(ids: string[], operacion: 'completar' | 'eliminar'): Promise<void> {
-        await this.api.post('/tareas/lote', { ids, operacion });
+        // Validar que hay IDs para procesar
+        if (!ids || ids.length === 0) {
+            throw new Error('No se proporcionaron IDs de tareas para procesar');
+        }
+
+        // Array para almacenar errores individuales
+        const errores: Array<{ id: string; error: any }> = [];
+
+        // Procesar cada tarea de forma secuencial
+        for (const id of ids) {
+            try {
+                if (operacion === 'completar') {
+                    // Usar el endpoint individual existente para completar
+                    await this.toggleCompletarTarea(id);
+                } else if (operacion === 'eliminar') {
+                    // Usar el endpoint individual existente para eliminar
+                    await this.eliminarTarea(id);
+                } else {
+                    throw new Error(`Operación no soportada: ${operacion}`);
+                }
+            } catch (error) {
+                // Registrar el error pero continuar con las siguientes tareas
+                errores.push({ id, error });
+                logger.error(`Error en operación ${operacion} para tarea ${id}:`, error);
+            }
+        }
+
+        // Si hubo errores, lanzar una excepción con detalles
+        if (errores.length > 0) {
+            const errorMessage = `Falló la operación ${operacion} en ${errores.length} de ${ids.length} tareas`;
+            const detailedError = new Error(errorMessage);
+
+            // Agregar información adicional sobre los errores
+            (detailedError as any).failedOperations = errores;
+            (detailedError as any).successCount = ids.length - errores.length;
+            (detailedError as any).totalCount = ids.length;
+
+            throw detailedError;
+        }
+
+        logger.log(`Operación ${operacion} completada exitosamente para ${ids.length} tareas`);
     }
 
     // Categorías

@@ -1,13 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
 
-import { ListTasks } from '../components/Tasks/ListTask';
-import { Loading } from '../components/Commons/Loading';
 import { ErrorMessage } from '../components/Commons/ErrorMessage';
+import { Loading } from '../components/Commons/Loading';
 import { Modal } from '../components/Commons/Modal';
-import { useTasks } from '../hooks/useTasks';
 import { FilterTask } from '../components/Tasks/FilterTask';
 import { FormTask } from '../components/Tasks/FormTask';
+import { ListTasks } from '../components/Tasks/ListTask';
+import { useTasks } from '../hooks/useTasks';
 
 const PageContainer = styled.div`
   max-width: 1200px;
@@ -222,6 +222,8 @@ export function TaskPage() {
             tareas={tasks}
             isLoading={isLoading}
             onEditarTarea={handleEditarTarea}
+            filtros={filtros}
+            orden={orden}
           />
         </TasksPanel>
       </ContentArea>
