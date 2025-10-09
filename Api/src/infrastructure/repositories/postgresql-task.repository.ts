@@ -300,7 +300,7 @@ export class PostgreSQLTaskRepository implements TaskRepository {
 
     try {
       // First remove all tag associations
-      await client.query('DELETE FROM tarea_etiquetas WHERE tarea_id = $1', [id]);
+      await client.query('DELETE FROM task_tags WHERE task_id = $1', [id]);
 
       // Then delete the task
       const result = await client.query('DELETE FROM tasks WHERE id = $1', [id]);

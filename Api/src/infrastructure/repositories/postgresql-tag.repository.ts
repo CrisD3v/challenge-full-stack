@@ -15,7 +15,7 @@ export class PostgreSQLTagRepository implements TagRepository {
     try {
       // Check if tag name already exists for this user
       const existsResult = await client.query(
-        'SELECT id FROM tags WHERE name = $1 AND usuario_id = $2',
+        'SELECT id FROM tags WHERE name = $1 AND user_id = $2',
         [tag.name, tag.userId]
       );
 
@@ -25,9 +25,9 @@ export class PostgreSQLTagRepository implements TagRepository {
 
       // Insert new tag
       const insertQuery = `
-        INSERT INTO tags (name, usuario_id)
+        INSERT INTO tags (name, user_id)
         VALUES ($1, $2)
-        RETURNING id, name, usuario_id
+        RETURNING id, name, user_id
       `;
 
       const result = await client.query(insertQuery, [
@@ -39,14 +39,14 @@ export class PostgreSQLTagRepository implements TagRepository {
 
       logger.info('Tag created successfully', {
         tagId: row.id,
-        userId: row.usuario_id,
+        userId: row.user_id,
         name: row.name
       });
 
       return new Tag(
         row.id,
         row.name,
-        row.usuario_id
+        row.user_id
       );
     } catch (error) {
       logger.error('Error creating tag', { error, tag });
@@ -72,7 +72,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       return result.rows.map(row => new Tag(
         row.id,
         row.name,
-        row.usuario_id
+        row.user_id
       ));
     } catch (error) {
       logger.error('Error finding tags by user ID', { error, userId });
@@ -102,7 +102,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       return new Tag(
         row.id,
         row.name,
-        row.usuario_id
+        row.user_id
       );
     } catch (error) {
       logger.error('Error finding tag by ID', { error, tagId: id });
@@ -132,7 +132,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       return result.rows.map(row => new Tag(
         row.id,
         row.name,
-        row.usuario_id
+        row.user_id
       ));
     } catch (error) {
       logger.error('Error finding tags by IDs', { error, tagIds: ids });
@@ -180,7 +180,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       ).join(', ');
 
       const insertQuery = `
-        INSERT INTO tarea_tags (task_id, tag_id)
+        INSERT INTO task_tags (task_id, tag_id)
         VALUES ${insertValues}
       `;
 
@@ -227,7 +227,7 @@ export class PostgreSQLTagRepository implements TagRepository {
 
     try {
       const query = `
-        SELECT e.id, e.name, e.usuario_id
+        SELECT e.id, e.name, e.user_id
         FROM tags e
         INNER JOIN task_tags te ON e.id = te.tag_id
         WHERE te.task_id = $1
@@ -239,7 +239,7 @@ export class PostgreSQLTagRepository implements TagRepository {
       return result.rows.map(row => new Tag(
         row.id,
         row.name,
-        row.usuario_id
+        row.user_id
       ));
     } catch (error) {
       logger.error('Error finding tags by task ID', { error, taskId });
