@@ -13,6 +13,7 @@ import type {
     Task,
     TaskFormData
 } from '../types';
+import { mapSortField, validateSortDirection } from '../utils/fieldMapping';
 
 class ApiService {
     private api: AxiosInstance;
@@ -117,29 +118,150 @@ class ApiService {
 
     // Tareas
     async obtenerTareas(filtros?: FiltrosTareas, orden?: OrdenTareas): Promise<Task[]> {
-        const params = new URLSearchParams();
+        // Construir parámetros de query de forma más robusta
+        const queryParams = this.buildQueryParams(filtros, orden);
 
-        if (filtros) {
-            Object.entries(filtros).forEach(([key, value]) => {
-                if (value !== undefined && value !== '') {
-                    params.append(key, value.toString());
-                }
-            });
-        }
+        // Log detallado de parámetros para debug
+        logger.log('API Service - Filtros originales:', filtros);
+        logger.log('API Service - Orden original:', orden);
+        logger.log('API Service - Parámetros construidos:', queryParams);
+        logger.log('API Service - Query string final:', queryParams.toString());
 
-        if (orden) {
-            params.append('ordenarPor', orden.field);
-            params.append('direccion', orden.direction);
-        }
-
-        logger.log('API Service - Obteniendo tareas con params:', params.toString());
-        const response: AxiosResponse<any> = await this.api.get(`/tareas?${params}`);
+        const response: AxiosResponse<any> = await this.api.get(`/tareas?${queryParams}`);
         logger.log('API Service - Respuesta tareas:', response.data);
 
         const tareas = response.data.tasks || response.data.tareas || response.data.data || response.data || [];
-        logger.log('API Service - Tareas procesadas:', tareas);
+        logger.log('API Service - Tareas procesadas:', tareas.length, 'tareas encontradas');
 
         return tareas;
+    }
+
+    /**
+     * Construye los parámetros de query para la obtención de tareas
+     * Asegura que solo se envíen parámetros válidos y no vacíos al servidor
+     *
+     * @param filtros Filtros de tareas opcionales
+     * @param orden Configuración de ordenamiento opcional
+     * @returns URLSearchParams con parámetros válidos
+     */
+    private buildQueryParams(filtros?: FiltrosTareas, orden?: OrdenTareas): URLSearchParams {
+        const params = new URLSearchParams();
+
+        // Procesar filtros solo si existen y tienen valores válidos
+        if (filtros) {
+            // Filtro de estado completado
+            if (typeof filtros.completed === 'boolean') {
+                params.append('completed', filtros.completed.toString());
+                logger.log('API Service - Agregando filtro completed:', filtros.completed);
+            }
+
+            // Filtro de prioridad
+            if (filtros.priority && ['baja', 'media', 'alta'].includes(filtros.priority)) {
+                params.append('priority', filtros.priority);
+                logger.log('API Service - Agregando filtro priority:', filtros.priority);
+                console.log('API Service - Priority filter added to params:', {
+                    priority: filtros.priority,
+                    allParams: Object.fromEntries(params.entries())
+                });
+            } else if (filtros.priority) {
+                logger.warn(`API Service - Valor inválido para priority ignorado: ${filtros.priority}`);
+                console.warn('API Service - Invalid priority value:', filtros.priority);
+            }
+
+            // Filtro de categoría
+            if (filtros.categoryId && filtros.categoryId.trim() !== '') {
+                params.append('categoryId', filtros.categoryId.trim());
+                logger.log('API Service - Agregando filtro categoryId:', filtros.categoryId);
+            }
+
+            // Filtro de etiqueta
+            if (filtros.tagId && filtros.tagId.trim() !== '') {
+                params.append('tagId', filtros.tagId.trim());
+                logger.log('API Service - Agregando filtro tagId:', filtros.tagId);
+            }
+
+            // Filtro de fecha desde
+            if (filtros.sinceDate && filtros.sinceDate.trim() !== '') {
+                // Validar formato de fecha ISO
+                const sinceDate = filtros.sinceDate.trim();
+                if (this.isValidISODate(sinceDate)) {
+                    params.append('sinceDate', sinceDate);
+                    logger.log('API Service - Agregando filtro sinceDate:', sinceDate);
+                } else {
+                    logger.warn(`API Service - Formato de fecha inválido para sinceDate ignorado: ${sinceDate}`);
+                }
+            }
+
+            // Filtro de fecha hasta
+            if (filtros.untilDate && filtros.untilDate.trim() !== '') {
+                // Validar formato de fecha ISO
+                const untilDate = filtros.untilDate.trim();
+                if (this.isValidISODate(untilDate)) {
+                    params.append('untilDate', untilDate);
+                    logger.log('API Service - Agregando filtro untilDate:', untilDate);
+                } else {
+                    logger.warn(`API Service - Formato de fecha inválido para untilDate ignorado: ${untilDate}`);
+                }
+            }
+
+            // Filtro de búsqueda por texto
+            if (filtros.search && filtros.search.trim() !== '') {
+                const searchTerm = filtros.search.trim();
+                // Solo agregar si tiene al menos 1 carácter después del trim
+                if (searchTerm.length > 0) {
+                    params.append('search', searchTerm);
+                    logger.log('API Service - Agregando filtro search:', searchTerm);
+                }
+            }
+        }
+
+        // Procesar ordenamiento si existe
+        if (orden && orden.field && orden.direction) {
+            // Mapear campo de ordenamiento del frontend al backend
+            const mappedField = mapSortField(orden.field);
+            params.append('ordenarPor', mappedField);
+            logger.log('API Service - Agregando ordenamiento campo:', `${orden.field} -> ${mappedField}`);
+            console.log('API Service - Sort field added to params:', {
+                originalField: orden.field,
+                mappedField,
+                allParams: Object.fromEntries(params.entries())
+            });
+
+            // Validar dirección de ordenamiento
+            const validDirection = validateSortDirection(orden.direction);
+            params.append('direccion', validDirection);
+            logger.log('API Service - Agregando ordenamiento dirección:', `${orden.direction} -> ${validDirection}`);
+            console.log('API Service - Sort direction added to params:', {
+                originalDirection: orden.direction,
+                validDirection,
+                allParams: Object.fromEntries(params.entries())
+            });
+        } else {
+            console.log('API Service - No sorting parameters provided:', orden);
+        }
+
+        // Log final de parámetros construidos
+        const paramCount = Array.from(params.keys()).length;
+        logger.log(`API Service - Construidos ${paramCount} parámetros de query válidos`);
+
+        return params;
+    }
+
+    /**
+     * Valida si una cadena es una fecha ISO válida
+     * @param dateString Cadena de fecha a validar
+     * @returns true si es una fecha ISO válida
+     */
+    private isValidISODate(dateString: string): boolean {
+        // Verificar formato básico ISO (YYYY-MM-DD o YYYY-MM-DDTHH:mm:ss.sssZ)
+        const isoDateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?)?$/;
+        if (!isoDateRegex.test(dateString)) {
+            return false;
+        }
+
+        // Verificar que sea una fecha válida
+        const date = new Date(dateString);
+        return !isNaN(date.getTime()) && date.toISOString().startsWith(dateString.substring(0, 10));
     }
 
     async obtenerTarea(id: string): Promise<Task> {

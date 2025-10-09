@@ -5,3 +5,6 @@ export * from './helpers';
 export * from './authEvents';
 export * from './cacheUtils';
 export * from './queryKeys';
+
+// Export cache optimization utilities
+export * from './cacheOptimizationDemo';

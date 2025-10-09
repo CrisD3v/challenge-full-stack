@@ -90,7 +90,7 @@ export const useQueryError = () => {
  * Hook for handling mutation errors with automatic error processing
  */
 export const useMutationError = () => {
-  const { handleError, getNotification, shouldRefresh, isAuthError } = useQueryError();
+  const { handleError, getNotification: _getNotification, shouldRefresh, isAuthError } = useQueryError();
 
   /**
    * Handle mutation error with automatic actions

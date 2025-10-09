@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { useTasks } from '../hooks/useTasks';
-import { apiService } from '../services/api';
-import { exportarCSV, exportarJSON } from '../utils/helpers';
-import { Loading } from '../components/Commons/Loading';
 import { ErrorMessage } from '../components/Commons/ErrorMessage';
+import { Loading } from '../components/Commons/Loading';
+import { useTasks } from '../hooks/useTasks';
+import { exportarCSV, exportarJSON } from '../utils/helpers';
 
 const PageContainer = styled.div`
   max-width: 800px;
@@ -213,53 +212,55 @@ export function ExportPages() {
     }
   };
 
-  const handleExportarServidorCSV = async () => {
-    try {
-      setExportando('server-csv');
-      setMensajeExito(null);
+  // TODO: Implementar exportación desde servidor
+  // const handleExportarServidorCSV = async () => {
+  //   try {
+  //     setExportando('server-csv');
+  //     setMensajeExito(null);
 
-      const blob = await apiService.exportarTareas('csv');
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `tareas_${new Date().toISOString().split('T')[0]}.csv`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+  //     const blob = await apiService.exportarTareas('csv');
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = `tareas_${new Date().toISOString().split('T')[0]}.csv`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(url);
 
-      setMensajeExito('Archivo CSV del servidor descargado exitosamente');
-    } catch (error) {
-      console.error('Error al exportar desde servidor:', error);
-    } finally {
-      setExportando(null);
-      setTimeout(() => setMensajeExito(null), 3000);
-    }
-  };
+  //     setMensajeExito('Archivo CSV del servidor descargado exitosamente');
+  //   } catch (error) {
+  //     console.error('Error al exportar desde servidor:', error);
+  //   } finally {
+  //     setExportando(null);
+  //     setTimeout(() => setMensajeExito(null), 3000);
+  //   }
+  // };
 
-  const handleExportarServidorJSON = async () => {
-    try {
-      setExportando('server-json');
-      setMensajeExito(null);
+  // TODO: Implementar exportación JSON desde servidor
+  // const handleExportarServidorJSON = async () => {
+  //   try {
+  //     setExportando('server-json');
+  //     setMensajeExito(null);
 
-      const blob = await apiService.exportarTareas('json');
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `tareas_${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+  //     const blob = await apiService.exportarTareas('json');
+  //     const url = window.URL.createObjectURL(blob);
+  //     const link = document.createElement('a');
+  //     link.href = url;
+  //     link.download = `tareas_${new Date().toISOString().split('T')[0]}.json`;
+  //     document.body.appendChild(link);
+  //     link.click();
+  //     document.body.removeChild(link);
+  //     window.URL.revokeObjectURL(url);
 
-      setMensajeExito('Archivo JSON del servidor descargado exitosamente');
-    } catch (error) {
-      console.error('Error al exportar desde servidor:', error);
-    } finally {
-      setExportando(null);
-      setTimeout(() => setMensajeExito(null), 3000);
-    }
-  };
+  //     setMensajeExito('Archivo JSON del servidor descargado exitosamente');
+  //   } catch (error) {
+  //     console.error('Error al exportar desde servidor:', error);
+  //   } finally {
+  //     setExportando(null);
+  //     setTimeout(() => setMensajeExito(null), 3000);
+  //   }
+  // };
 
   // Asegurar que tareas sea un array
   const tareasArray = Array.isArray(tasks) ? tasks : [];

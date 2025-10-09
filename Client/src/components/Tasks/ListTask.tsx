@@ -276,7 +276,7 @@ export function ListTasks({ tareas, isLoading, onEditarTarea, filtros, orden }: 
   // Este hook proporciona las funciones y estados necesarios para realizar
   // operaciones masivas sobre múltiples tareas seleccionadas
   const {
-    batchOperations, // Será usado en tareas futuras para operaciones síncronas
+    batchOperations: _batchOperations, // Será usado en tareas futuras para operaciones síncronas
     batchOperationsAsync,
     isBatchProcessing, // Usado para deshabilitar botones durante operaciones
     batchError // Usado para mostrar errores de operaciones en lote
@@ -285,18 +285,36 @@ export function ListTasks({ tareas, isLoading, onEditarTarea, filtros, orden }: 
   // Convert tareas to array early to avoid initialization issues
   const tareasArray = Array.isArray(tareas) ? tareas : [];
 
-  // Estado local para las tareas reordenadas
-  const [tareasLocales, setTareasLocales] = useState<Task[]>(tareasArray);
+  // TEMPORAL: Usar directamente las tareas recibidas sin estado local para debugging
+  const tareasLocales = tareasArray;
 
-  // Actualizar tareas locales cuando cambien las props
-  React.useEffect(() => {
-    setTareasLocales(tareasArray);
-  }, [tareasArray]);
+  // Estado local para las tareas reordenadas (comentado temporalmente)
+  // const [tareasLocales, setTareasLocales] = useState<Task[]>(tareasArray);
+
+  // Actualizar tareas locales cuando cambien las props (comentado temporalmente)
+  // React.useEffect(() => {
+  //   setTareasLocales(tareasArray);
+  // }, [tareasArray]);
 
   // Debug logs
   console.log('ListaTareas - tareas recibidas:', tareas);
   console.log('ListaTareas - isLoading:', isLoading);
   console.log('ListaTareas - Array.isArray(tareas):', Array.isArray(tareas));
+  console.log('ListaTareas - filtros:', filtros);
+  console.log('ListaTareas - orden:', orden);
+  console.log('ListaTareas - tareasLocales length:', tareasLocales.length);
+
+  // Debug: mostrar las primeras 3 tareas para verificar el orden
+  if (tareasLocales.length > 0) {
+    console.log('ListaTareas - Primeras 3 tareas (orden actual):',
+      tareasLocales.slice(0, 3).map(t => ({
+        id: t.id,
+        title: t.title,
+        priority: t.priority,
+        createdAt: t.createdAt
+      }))
+    );
+  }
 
   const handleSeleccionarTarea = (tareaId: string, seleccionada: boolean) => {
     const nuevasSeleccionadas = new Set(tareasSeleccionadas);
@@ -462,9 +480,9 @@ export function ListTasks({ tareas, isLoading, onEditarTarea, filtros, orden }: 
     handleDrop,
     handleDragEnd
   } = useDragAndDrop(tareasLocales, (reorderedItems) => {
-    // Actualizar el estado local con las tareas reordenadas
+    // Actualizar el estado local con las tareas reordenadas (comentado temporalmente)
     console.log('Tareas reordenadas:', reorderedItems);
-    setTareasLocales(reorderedItems);
+    // setTareasLocales(reorderedItems);
     // Aquí podrías hacer una llamada al backend para persistir el orden
   });
 

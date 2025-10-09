@@ -13,7 +13,7 @@ interface CacheInspectorProps {
 export const CacheInspector: React.FC<CacheInspectorProps> = ({ isOpen, onClose }) => {
   const [stats, setStats] = useState<any>(null);
   const [insights, setInsights] = useState<any[]>([]);
-  const [selectedEntity] = useState<string>('all');
+  const [_selectedEntity] = useState<string>('all');
   const [refreshInterval, setRefreshInterval] = useState<number>(5000);
 
   const envOptimizations = getEnvironmentOptimizations();

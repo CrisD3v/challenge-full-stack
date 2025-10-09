@@ -46,7 +46,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
   };
 
-  const showError = (error: any, context?: string) => {
+  const showError = (error: any, _context?: string) => {
     const processedError = processError(error);
 
     showToast({

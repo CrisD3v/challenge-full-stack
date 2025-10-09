@@ -1,10 +1,10 @@
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuth } from '../context/AuthContext';
-import { useTasks } from '../hooks/useTasks';
-import { useCategories } from '../hooks/useCategorias';
-import { Loading } from '../components/Commons/Loading';
 import { ErrorMessage } from '../components/Commons/ErrorMessage';
+import { Loading } from '../components/Commons/Loading';
+import { useAuth } from '../context/AuthContext';
+import { useCategories } from '../hooks/useCategorias';
+import { useTasks } from '../hooks/useTasks';
 import { formatearFecha } from '../utils/helpers';
 
 
@@ -188,8 +188,8 @@ const StatLabel = styled.div`
 
 export function HomePage() {
   const { usuario } = useAuth();
-  const { tasks, isLoading: tareasLoading, error: tareasError, cargarTareas } = useTasks();
-  const { categorias, isLoading: categoriasLoading, cargarCategorias } = useCategories();
+  const { tasks, isLoading: tareasLoading, error: tareasError, cargarTareas: _cargarTareas } = useTasks();
+  const { categorias, isLoading: categoriasLoading, cargarCategorias: _cargarCategorias } = useCategories();
 
 
   const isLoading = tareasLoading || categoriasLoading;

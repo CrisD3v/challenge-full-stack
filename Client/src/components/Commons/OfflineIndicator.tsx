@@ -28,7 +28,7 @@ export const OfflineIndicator: React.FC<OfflineIndicatorProps> = ({
   const {
     isOnline,
     wasOffline,
-    offlineDuration,
+    offlineDuration: _offlineDuration,
     offlineDurationText,
     cacheInfo,
     hasUsableCache,
