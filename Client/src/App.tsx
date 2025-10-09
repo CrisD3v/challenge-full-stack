@@ -1,10 +1,12 @@
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { AuthPage } from './pages/AuthPage';
-import { Dashboard } from './pages/DashboardPage';
 import { ErrorBoundary } from './components/Commons/ErrorBoundary';
+import { ToastProvider } from './components/Commons/ErrorToast';
+import { GlobalErrorHandler } from './components/Commons/GlobalErrorHandler';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
-import './styles/globals.css'
+import { AuthPage } from './pages/AuthPage';
+import { Dashboard } from './pages/DashboardPage';
+import './styles/globals.css';
 
 
 function AppRoutes() {
@@ -47,11 +49,14 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AuthProvider>
-          <Router>
-            <AppRoutes />
-          </Router>
-        </AuthProvider>
+        <ToastProvider>
+          <GlobalErrorHandler />
+          <AuthProvider>
+            <Router>
+              <AppRoutes />
+            </Router>
+          </AuthProvider>
+        </ToastProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );
